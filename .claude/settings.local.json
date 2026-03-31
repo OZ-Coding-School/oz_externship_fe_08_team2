@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add:*)",
+      "Bash(npx playwright:*)",
+      "Bash(git:*)",
+      "Bash(gh pr:*)",
+      "mcp__context7__resolve-library-id",
+      "Skill(update-config)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(npx msw:*)",
+      "Bash(pnpm build:*)",
+      "mcp__context7__query-docs",
+      "Bash(npm install:*)",
+      "Bash(npx husky:*)",
+      "Bash(bash .husky/commit-msg /dev/stdin)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(bash .husky/commit-msg /tmp/test-msg2)",
+      "Bash(bash .husky/commit-msg /tmp/test-msg3)"
+    ]
+  }
+}

@@ -19,5 +19,10 @@
       "Bash(bash .husky/commit-msg /tmp/test-msg2)",
       "Bash(bash .husky/commit-msg /tmp/test-msg3)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "figma",
+    "context7",
+    "playwright"
+  ]
 }

@@ -24,14 +24,14 @@
 
 ## 구현 파일 목록
 
-| 파일 | 설명 | 상태 |
-|------|------|------|
-| `src/features/posts/comments/types.ts` | API 요청/응답 타입 정의 | ✅ 완료 |
-| `src/features/posts/comments/queries.ts` | useInfiniteQuery 훅 | ✅ 완료 |
-| `src/features/posts/comments/handler.ts` | MSW 모킹 핸들러 | ✅ 완료 |
-| `src/features/posts/comments/index.ts` | barrel export | ✅ 완료 |
-| `src/mocks/handlers.ts` | MSW 핸들러 등록 | ✅ 완료 |
-| `src/pages/community/CommunityCommentsPage.tsx` | 메인 페이지 컴포넌트 | ✅ 완료 |
+| 파일                                            | 설명                    | 상태    |
+| ----------------------------------------------- | ----------------------- | ------- |
+| `src/features/posts/comments/types.ts`          | API 요청/응답 타입 정의 | ✅ 완료 |
+| `src/features/posts/comments/queries.ts`        | useInfiniteQuery 훅     | ✅ 완료 |
+| `src/features/posts/comments/handler.ts`        | MSW 모킹 핸들러         | ✅ 완료 |
+| `src/features/posts/comments/index.ts`          | barrel export           | ✅ 완료 |
+| `src/mocks/handlers.ts`                         | MSW 핸들러 등록         | ✅ 완료 |
+| `src/pages/community/CommunityCommentsPage.tsx` | 메인 페이지 컴포넌트    | ✅ 완료 |
 
 ---
 
@@ -57,9 +57,7 @@
         "nickname": "testuser",
         "profile_img_url": "https://example.com/image.png"
       },
-      "tagged_users": [
-        { "id": 2, "nickname": "testuser2" }
-      ],
+      "tagged_users": [{ "id": 2, "nickname": "testuser2" }],
       "content": "@testuser2 댓글 내용",
       "created_at": "2025-10-30T14:01:57.505250+09:00",
       "updated_at": "2025-10-30T14:01:57.505250+09:00"
@@ -73,6 +71,7 @@
 ## 구현 요구사항 체크리스트
 
 ### 필수 기능
+
 - [x] 댓글 목록 무한스크롤 (10개씩, IntersectionObserver)
 - [x] 스크롤 로딩 중 `...` 표시
 - [x] 댓글 작성자 닉네임 + 프로필 이미지 표시
@@ -82,6 +81,7 @@
 - [x] 댓글 없을 시 "등록된 댓글이 없습니다." 표시
 
 ### 예외 처리
+
 - [x] 게시물 404 → 토스트 메시지 후 `/community` 목록으로 이동
 - [x] 잘못된 postId (숫자 아님) → 404 페이지
 
@@ -95,7 +95,7 @@
 import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 
 // CommunityDetailPage 렌더 내부
-<CommunityCommentsPage />
+;<CommunityCommentsPage />
 ```
 
 `postId`는 컴포넌트 내부에서 `useParams`로 자동으로 읽어옵니다.
@@ -104,8 +104,8 @@ import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 
 ## 커밋 이력
 
-| 커밋 | 내용 |
-|------|------|
-| 작업 진행 파일 생성 | docs/progress/comment-feature.md 추가 |
-| feature 모듈 구현 | comments types, queries, handler, index |
-| CommunityCommentsPage 구현 | 무한스크롤, 멘션 파싱, 404 처리 |
+| 커밋                       | 내용                                    |
+| -------------------------- | --------------------------------------- |
+| 작업 진행 파일 생성        | docs/progress/commentList.md 추가       |
+| feature 모듈 구현          | comments types, queries, handler, index |
+| CommunityCommentsPage 구현 | 무한스크롤, 멘션 파싱, 404 처리         |

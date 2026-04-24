@@ -1,17 +1,22 @@
 import { http, HttpResponse } from 'msw'
+import { categoriesHandlers } from '@/features/posts/categories'
+import { writeHandlers } from '@/features/posts/write'
 import { postDetailHandlers } from '@/features/posts/detail'
+import { editHandlers } from '@/features/posts/edit'
 import { postLikeHandlers } from '@/features/posts/like'
 import { postDeleteHandlers } from '@/features/posts/delete'
 import { commentsHandlers } from '@/features/posts/comments'
 
+// categories → detail 순서: /posts/categories가 /posts/:postId보다 먼저 매칭되어야 함
 export const handlers = [
-  // 예시 핸들러 — 실제 API에 맞게 수정하세요
   http.get('/api/health', () => {
     return HttpResponse.json({ status: 'ok' })
   }),
-  ...commentsHandlers,
-
+  ...categoriesHandlers,
+  ...writeHandlers,
   ...postDetailHandlers,
+  ...editHandlers,
+  ...commentsHandlers,
   ...postLikeHandlers,
   ...postDeleteHandlers,
 ]

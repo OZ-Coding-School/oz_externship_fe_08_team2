@@ -220,6 +220,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - **쿼리 파라미터**:?page=2&page_size=10 (`page=2`: 전체 댓글 중 **2번째 페이지**를 보여달라.
   - `page_size=10`: 한 페이지에 댓글을 **10개씩** 끊어서 보여달라.)
   - **성공 응답 예시**:
+
   ```json
   "200: {
       "count": 100,
@@ -248,6 +249,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   ```
 
   - **실패 응답 예시**:
+
   ```json
   "404: {
       "error_detail": "해당 게시글을 찾을 수 없습니다."

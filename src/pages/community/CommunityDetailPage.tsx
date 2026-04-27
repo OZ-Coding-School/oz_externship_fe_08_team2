@@ -3,7 +3,7 @@
  * @figma 커뮤니티 상세 페이지 (회원)        https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-10585&m=dev
  * @figma 커뮤니티 상세 페이지 (회원-작성자) https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-10696&m=dev
  */
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { ConfirmModal } from '@/components/common/Modal/ConfirmModal'
 import { PostHeader } from '@/components/community/PostHeader'
@@ -11,65 +11,45 @@ import { PostAuthorActions } from '@/components/community/PostAuthorActions'
 import { PostBody } from '@/components/community/PostBody'
 import { PostActions } from '@/components/community/PostActions'
 import { CommentSection } from '@/components/community/CommentSection'
+import { usePostDetail } from '@/features/posts/detail'
+import { useTogglePostLike } from '@/features/posts/like'
+import { useDeletePost } from '@/features/posts/delete'
+import { useAuthStore } from '@/stores/authStore'
 
-// TODO(타입): src/features/posts/detail/types.ts 로 이동
-interface PostAuthor {
-  id: number
-  nickname: string
-  profileImage: string | null
-}
-
-interface PostDetail {
-  id: number
-  title: string
-  /** HTML 문자열 (리치텍스트 에디터 출력, 이미지 포함 가능) */
-  content: string
-  category: string
-  createdAt: string
-  viewCount: number
-  likeCount: number
-  commentCount: number
-  isLiked: boolean
-  /** TODO(권한): API 응답 필드 vs authStore.userId 비교 — 방식 확정 후 교체 */
-  isAuthor: boolean
-  author: PostAuthor
-}
-
-// TODO(API): posts/detail — GET /api/v1/posts/{post_id} 연동 후 교체
-const DUMMY_POST: PostDetail = {
-  id: 0,
-  title: '(임시) 게시글 제목',
-  content: '<p>(임시) 본문 내용이 여기에 표시됩니다.</p>',
-  category: '자유',
-  createdAt: '2026-04-24',
-  viewCount: 0,
-  likeCount: 0,
-  commentCount: 0,
-  isLiked: false,
-  isAuthor: false,
-  author: { id: 0, nickname: '작성자', profileImage: null },
-}
-
-export function CommunityDetailPage() {
-  const { postId } = useParams<{ postId: string }>()
+function CommunityDetailContent({ postId }: { postId: number }) {
   const navigate = useNavigate()
+  const { data: post } = usePostDetail(postId)
+  const { isAuthenticated, user } = useAuthStore()
 
+  const isLoggedIn = isAuthenticated
+  const isAuthor = isAuthenticated && user?.nickname === post.author.nickname
+
+  const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
+  const [likeCount, setLikeCount] = useState(post.like_count)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-  // TODO(API): posts/detail — GET /api/v1/posts/{post_id} 연동
-  const post: PostDetail = DUMMY_POST
-
-  // TODO(좋아요): authStore 로그인 상태 연동
-  const isLoggedIn = false
-
-  // TODO(로딩/에러): 로딩 중 Spinner, 에러 시 에러 메시지 처리 추가
+  const { mutate: toggleLike } = useTogglePostLike(postId)
+  const { mutate: deletePost } = useDeletePost()
 
   const handleEdit = () => {
     navigate(`/community/${postId}/edit`)
   }
 
+  const handleLike = () => {
+    toggleLike(isLiked, {
+      onSuccess: (data) => {
+        setIsLiked(data.is_liked)
+        setLikeCount(data.like_count)
+      },
+    })
+  }
+
   const handleDeleteConfirm = () => {
-    // TODO(API): posts/delete — DELETE /api/v1/posts/{post_id} 연동
+    deletePost(postId, {
+      onSuccess: () => {
+        navigate('/community')
+      },
+    })
   }
 
   return (
@@ -87,15 +67,18 @@ export function CommunityDetailPage() {
       <article>
         {/* 헤더: 카테고리 · 제목 · 작성자 · 메타 */}
         <PostHeader
-          category={post.category}
+          category={post.category_name}
           title={post.title}
-          author={post.author}
-          createdAt={post.createdAt}
-          viewCount={post.viewCount}
+          author={{
+            nickname: post.author.nickname,
+            profileImage: post.author.profile_img_url,
+          }}
+          createdAt={post.created_at}
+          viewCount={post.view_count}
         />
 
         {/* 수정/삭제 버튼 — 작성자 전용 */}
-        {post.isAuthor && (
+        {isAuthor && (
           <PostAuthorActions
             onEdit={handleEdit}
             onDelete={() => setIsDeleteModalOpen(true)}
@@ -107,16 +90,17 @@ export function CommunityDetailPage() {
 
         {/* 좋아요 */}
         <PostActions
-          likeCount={post.likeCount}
-          isLiked={post.isLiked}
+          likeCount={likeCount}
+          isLiked={isLiked}
           isLoggedIn={isLoggedIn}
-          onLike={() => {
-            // TODO(좋아요): posts/like — POST /api/v1/posts/{post_id}/like 연동
-          }}
+          onLike={handleLike}
         />
 
         {/* 댓글 (별도 이슈) */}
-        <CommentSection postId={post.id} commentCount={post.commentCount} />
+        <CommentSection
+          postId={post.id}
+          commentCount={post.comment_count ?? 0}
+        />
       </article>
 
       {/* 게시글 삭제 확인 모달 */}
@@ -129,5 +113,30 @@ export function CommunityDetailPage() {
         onConfirm={handleDeleteConfirm}
       />
     </main>
+  )
+}
+
+export function CommunityDetailPage() {
+  const { postId } = useParams<{ postId: string }>()
+  const postIdNum = Number(postId)
+
+  if (isNaN(postIdNum)) {
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-10">
+        <p className="text-text-muted">잘못된 게시글 ID입니다.</p>
+      </main>
+    )
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-4xl px-4 py-10">
+          <p className="text-text-muted">로딩 중...</p>
+        </main>
+      }
+    >
+      <CommunityDetailContent postId={postIdNum} />
+    </Suspense>
   )
 }

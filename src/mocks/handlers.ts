@@ -1,4 +1,7 @@
 import { http, HttpResponse } from 'msw'
+import { postDetailHandlers } from '@/features/posts/detail'
+import { postLikeHandlers } from '@/features/posts/like'
+import { postDeleteHandlers } from '@/features/posts/delete'
 import { commentsHandlers } from '@/features/posts/comments'
 
 export const handlers = [
@@ -7,4 +10,8 @@ export const handlers = [
     return HttpResponse.json({ status: 'ok' })
   }),
   ...commentsHandlers,
+
+  ...postDetailHandlers,
+  ...postLikeHandlers,
+  ...postDeleteHandlers,
 ]

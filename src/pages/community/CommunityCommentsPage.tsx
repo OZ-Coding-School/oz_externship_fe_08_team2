@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { Avatar, Toast } from '@/components'
 import { useCommentsInfiniteQuery } from '@/features/posts/comments'
@@ -91,14 +91,15 @@ function CommentItem({ comment }: { comment: Comment }) {
  *
  * postId는 react-router의 useParams()로 자동으로 읽어옵니다.
  */
+interface Props {
+    postId: number
+  }
+
 export function CommunityCommentsPage() {
   const { postId } = useParams<{ postId: string }>()
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const loadMoreRef = useRef<HTMLDivElement>(null)
-
-  const postIdNum = Number(postId)
-  const isValidPostId = Boolean(postId) && !isNaN(postIdNum)
 
   const {
     data,
@@ -138,16 +139,6 @@ export function CommunityCommentsPage() {
 
   // ── 조기 반환 (hooks 이후) ──────────────────────────────
 
-  // postId가 유효한 숫자가 아니면 404 화면
-  if (!isValidPostId) {
-    return (
-      <div className="py-20 text-center">
-        <p className="text-text-heading text-2xl font-semibold">
-          해당 페이지가 없습니다.
-        </p>
-      </div>
-    )
-  }
 
   const allComments = data?.pages.flatMap((page) => page.results) ?? []
   const totalCount = data?.pages[0]?.count ?? 0

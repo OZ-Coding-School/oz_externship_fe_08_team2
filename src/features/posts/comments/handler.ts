@@ -19,14 +19,49 @@ const mockComments = Array.from({ length: TOTAL }, (_, i) => ({
   updated_at: new Date(Date.now() - i * 60_000).toISOString(),
 }))
 
+let nextId = TOTAL + 1
+
 export const commentsHandlers = [
+  http.post('/api/v1/posts/:postId/comments', async ({ params, request }) => {
+    const { postId } = params
+
+    if (postId === '999') {
+      return HttpResponse.json(
+        { error_detail: '해당 게시글을 찾을 수 없습니다.' },
+        { status: 404 }
+      )
+    }
+
+    const body = (await request.json()) as { content: string }
+
+    if (!body.content || body.content.trim().length === 0) {
+      return HttpResponse.json(
+        { error_detail: '댓글은 1글자 이상 입력해야 합니다.' },
+        { status: 400 }
+      )
+    }
+
+    const newComment = {
+      id: nextId++,
+      author: { id: 1, nickname: 'user1', profile_img_url: null },
+      tagged_users: [],
+      content: body.content,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    mockComments.unshift(newComment)
+
+    return HttpResponse.json(newComment, { status: 201 })
+  }),
+
   http.get('/api/v1/posts/:postId/comments', ({ params, request }) => {
     const { postId } = params
 
     if (postId === '999') {
       return HttpResponse.json(
         { error_detail: '해당 게시글을 찾을 수 없습니다.' },
-        { status: 404 },
+        { status: 404 }
       )
     }
 

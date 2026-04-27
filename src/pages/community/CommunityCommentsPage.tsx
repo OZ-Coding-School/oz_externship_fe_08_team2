@@ -1,9 +1,11 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
-
 import axios from 'axios'
 import { Avatar, Toast } from '@/components'
-import { useCommentsInfiniteQuery } from '@/features/posts/comments'
+import {
+  useCommentsInfiniteQuery,
+  useSubmitComment,
+} from '@/features/posts/comments'
 import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/constants/routes'
 import type { Comment, TaggedUser } from '@/features/posts/comments'
@@ -100,6 +102,7 @@ export function CommunityCommentsPage({ postId }: Props) {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const [inputValue, setInputValue] = useState('')
 
   const {
     data,
@@ -110,6 +113,16 @@ export function CommunityCommentsPage({ postId }: Props) {
     isError,
     error,
   } = useCommentsInfiniteQuery(postId, Boolean(postId))
+
+  const { mutate: submitComment, isPending: isSubmitting } = useSubmitComment(postId)
+
+  const handleSubmit = useCallback(() => {
+    if (!inputValue.trim()) return
+    submitComment(
+      { content: inputValue.trim() },
+      { onSuccess: () => setInputValue('') }
+    )
+  }, [inputValue, submitComment])
 
   // 게시물이 삭제된 경우 (404) 여부를 쿼리 상태에서 직접 파생
   const isPostNotFound =
@@ -170,15 +183,21 @@ export function CommunityCommentsPage({ postId }: Props) {
       {isAuthenticated && (
         <div className="mb-6 flex gap-3">
           <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder="댓글을 입력하세요..."
             rows={3}
-            className="border-border-base bg-bg-base text-text-heading placeholder:text-text-muted focus:border-primary flex-1 resize-none rounded-sm border px-4 py-3 text-sm transition-colors duration-150 outline-none"
+            maxLength={500}
+            disabled={isSubmitting}
+            className="border-border-base bg-bg-base text-text-heading placeholder:text-text-muted focus:border-primary flex-1 resize-none rounded-sm border px-4 py-3 text-sm transition-colors duration-150 outline-none disabled:opacity-50"
           />
           <button
             type="button"
-            className="bg-primary text-text-inverse hover:bg-primary-700 h-fit self-end rounded-sm px-5 py-3 text-sm font-medium transition-colors duration-150"
+            onClick={handleSubmit}
+            disabled={!inputValue.trim() || isSubmitting}
+            className="bg-primary text-text-inverse hover:bg-primary-700 h-fit self-end rounded-sm px-5 py-3 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            작성
+            {isSubmitting ? '등록 중...' : '작성'}
           </button>
         </div>
       )}

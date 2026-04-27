@@ -152,7 +152,7 @@ export function CommunityCommentsPage({ postId }: Props) {
         },
       }
     )
-  }, [inputValue, submitComment, showSubmitToast])
+  }, [inputValue, submitComment, showSubmitToast, navigate])
 
   // 게시물이 삭제된 경우 (404) 여부를 쿼리 상태에서 직접 파생
   const isPostNotFound =

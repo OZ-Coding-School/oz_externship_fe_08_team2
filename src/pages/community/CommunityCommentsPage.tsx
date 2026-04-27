@@ -147,7 +147,7 @@ export function CommunityCommentsPage() {
   if (isLoading) {
     return (
       <section className="mt-8">
-        <div className="text-primary py-8 text-center text-3xl">...</div>
+        <div className="text-primary py-8 text-center text-8xl">...</div>
       </section>
     )
   }
@@ -200,7 +200,7 @@ export function CommunityCommentsPage() {
       {/* 무한스크롤 감지 영역 + 로딩 표시 */}
       <div ref={loadMoreRef} className="py-2">
         {isFetchingNextPage && (
-          <div className="text-primary py-4 text-center text-3xl">...</div>
+          <div className="text-primary py-4 text-center text-8xl">...</div>
         )}
       </div>
     </section>

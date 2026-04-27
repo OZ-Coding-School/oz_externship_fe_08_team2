@@ -20,13 +20,14 @@ const mockComments = Array.from({ length: TOTAL }, (_, i) => ({
 }))
 
 export const commentsHandlers = [
-  http.get('/api/v1/posts/:postId/comments', ({ params, request }) => {
+  http.get('/api/v1/posts/:postId/comments', async ({ params, request }) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     const { postId } = params
 
     if (postId === '999') {
       return HttpResponse.json(
         { error_detail: '해당 게시글을 찾을 수 없습니다.' },
-        { status: 404 },
+        { status: 404 }
       )
     }
 

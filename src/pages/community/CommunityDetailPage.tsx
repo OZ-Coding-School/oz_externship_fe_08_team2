@@ -10,7 +10,7 @@ import { PostHeader } from '@/components/community/PostHeader'
 import { PostAuthorActions } from '@/components/community/PostAuthorActions'
 import { PostBody } from '@/components/community/PostBody'
 import { PostActions } from '@/components/community/PostActions'
-import { CommentSection } from '@/components/community/CommentSection'
+import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 
 // TODO(타입): src/features/posts/detail/types.ts 로 이동
 interface PostAuthor {
@@ -73,7 +73,7 @@ export function CommunityDetailPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto w-full px-4 py-10" style={{ maxWidth: '944px' }}>
       {/* 뒤로가기 */}
       <button
         type="button"
@@ -115,8 +115,8 @@ export function CommunityDetailPage() {
           }}
         />
 
-        {/* 댓글 (별도 이슈) */}
-        <CommentSection postId={post.id} commentCount={post.commentCount} />
+        {/* 댓글 */}
+        <CommunityCommentsPage />
       </article>
 
       {/* 게시글 삭제 확인 모달 */}

@@ -248,13 +248,13 @@ async function main() {
   } else if (missing > 0) {
     console.log('💡 Baseline 다운로드 방법:')
     console.log(
-      '   pnpm test:visual:update-baseline -- --download              (누락분만)'
+      '   npm run test:visual:update-baseline -- --download              (누락분만)'
     )
     console.log(
-      '   pnpm test:visual:update-baseline -- --download --all        (전체 재다운로드)'
+      '   npm run test:visual:update-baseline -- --download --all        (전체 재다운로드)'
     )
     console.log(
-      '   pnpm test:visual:update-baseline -- --download --pages login,signup  (특정 페이지만)'
+      '   npm run test:visual:update-baseline -- --download --pages login,signup  (특정 페이지만)'
     )
     console.log('\n   FIGMA_TOKEN은 .env 파일에 설정하거나 환경변수로 전달')
   }

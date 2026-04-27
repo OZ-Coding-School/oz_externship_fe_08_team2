@@ -19,7 +19,7 @@
 ### 1. 의존성 설치
 
 ```bash
-pnpm install
+npm install
 ```
 
 ### 2. Playwright 브라우저 설치
@@ -40,13 +40,13 @@ npx playwright install chromium
 
 E2E 테스트는 `http://localhost:5173`에서 동작하는 개발 서버가 필요합니다. Playwright 설정에 의해 테스트 실행 시 개발 서버가 자동으로 시작됩니다.
 
-- 로컬 환경: 이미 `pnpm dev`로 서버가 실행 중이면 해당 서버를 재사용합니다.
+- 로컬 환경: 이미 `npm run dev`로 서버가 실행 중이면 해당 서버를 재사용합니다.
 - CI 환경: 항상 새 서버를 시작합니다.
 
 수동으로 서버를 먼저 시작해두면 테스트 시작 시간이 단축됩니다.
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ---
@@ -58,7 +58,7 @@ pnpm dev
 `package.json`에 정의된 기본 스크립트는 Chromium 프로젝트만 실행합니다.
 
 ```bash
-pnpm test:e2e
+npm run test:e2e
 ```
 
 이 명령어는 내부적으로 `playwright test --project=chromium`을 실행합니다.
@@ -68,7 +68,7 @@ pnpm test:e2e
 Playwright의 인터랙티브 UI에서 테스트를 실행하고 디버깅할 수 있습니다. 테스트를 선택적으로 실행하거나, 각 단계별 스크린샷을 확인할 때 유용합니다.
 
 ```bash
-pnpm test:e2e:ui
+npm run test:e2e:ui
 ```
 
 ### 특정 테스트 파일 실행
@@ -267,7 +267,7 @@ Error: page.goto: NS_ERROR_CONNECTION_REFUSED
 lsof -i :5173
 
 # 수동으로 개발 서버 시작
-pnpm dev
+npm run dev
 ```
 
 ### 테스트가 타임아웃되는 경우

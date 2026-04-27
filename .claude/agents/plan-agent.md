@@ -184,7 +184,7 @@ model: sonnet
 - [ ] 구현 에이전트가 이 계획을 보고 바로 작업 시작 가능한 상태
 - [ ] 신규 기능이면 E2E 테스트 통과
 - [ ] `npx tsc --noEmit` 타입 에러 없음
-- [ ] `pnpm build` 빌드 성공
+- [ ] `npm run build` 빌드 성공
 ```
 
 ---

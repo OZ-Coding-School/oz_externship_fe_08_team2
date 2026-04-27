@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm add:*)",
+      "Bash(npm install:*)",
       "Bash(npx playwright:*)",
       "Bash(git:*)",
       "Bash(gh pr:*)",
@@ -10,9 +10,8 @@
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
       "Bash(npx msw:*)",
-      "Bash(pnpm build:*)",
+      "Bash(npm run build:*)",
       "mcp__context7__query-docs",
-      "Bash(npm install:*)",
       "Bash(npx husky:*)",
       "Bash(bash .husky/commit-msg /dev/stdin)",
       "Bash(echo \"Exit code: $?\")",
@@ -22,7 +21,9 @@
       "Bash(node:*)",
       "Bash(FIGMA_TOKEN=figd_FjdpIRYQj1vCtC3-81KZ2kZczK9eAjgNA03mq0W2 node:*)",
       "Bash(grep -n \"max-w-container\\\\|w-container\" /Users/hyeonchaeeun/Desktop/externship-ai-workflow/src/**/*.tsx /Users/hyeonchaeeun/Desktop/externship-ai-workflow/src/**/**/*.tsx)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(grep -r npm /c/Users/최민제/Desktop/oz1122/oz_externship_fe_08_team2 --include=*.json --include=*.md --include=*.yaml --include=*.yml --include=*.ts -l)",
+      "Skill(git-sync)"
     ]
   },
   "enabledMcpjsonServers": [

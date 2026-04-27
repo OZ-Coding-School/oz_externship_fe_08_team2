@@ -103,9 +103,9 @@ git diff dev...HEAD --name-only   # 최근 변경 파일 확인
 ### Step 5: 검증
 
 ```bash
-pnpm lint          # ESLint 검증
+npm run lint       # ESLint 검증
 npx tsc --noEmit   # 타입 에러 없음
-pnpm build         # 빌드 성공 확인
+npm run build      # 빌드 성공 확인
 ```
 
 E2E 테스트 파일이 존재하는 경우:

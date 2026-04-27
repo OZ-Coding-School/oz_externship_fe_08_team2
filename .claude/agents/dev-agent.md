@@ -25,7 +25,7 @@ model: opus
 | 상태관리      | React useState/useEffect, Zustand                      |
 | 서버상태관리  | TanStack Query                                         |
 | API 모킹      | MSW (`setupWorker` 브라우저, `VITE_MSW=true`)          |
-| 패키지 매니저 | pnpm                                                   |
+| 패키지 매니저 | npm                                                    |
 
 ### Tailwind v4 규칙
 
@@ -132,13 +132,13 @@ src/features/{도메인}/{액션}/
 
 ```bash
 npx tsc --noEmit                 # 타입 에러 없음
-pnpm build                       # 빌드 성공 확인
+npm run build                    # 빌드 성공 확인
 ```
 
 테스트 파일이 존재하는 경우:
 
 ```bash
-pnpm test:e2e [해당 spec 파일]   # E2E 테스트 통과 확인
+npm run test:e2e [해당 spec 파일] # E2E 테스트 통과 확인
 ```
 
 ## 출력 형식

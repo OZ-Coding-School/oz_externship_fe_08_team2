@@ -90,9 +90,7 @@ function CommentItem({ comment }: { comment: Comment }) {
  *
  * 사용법 (CommunityDetailPage에서):
  *   import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
- *   <CommunityCommentsPage />
- *
- * postId는 react-router의 useParams()로 자동으로 읽어옵니다.
+ *   <CommunityCommentsPage postId={post.id} />
  */
 interface Props {
   postId: number
@@ -103,6 +101,11 @@ export function CommunityCommentsPage({ postId }: Props) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = useState('')
+  const [submitToast, setSubmitToast] = useState<{
+    message: string
+    variant: 'success' | 'error'
+    visible: boolean
+  }>({ message: '', variant: 'error', visible: false })
 
   const {
     data,
@@ -114,15 +117,42 @@ export function CommunityCommentsPage({ postId }: Props) {
     error,
   } = useCommentsInfiniteQuery(postId, Boolean(postId))
 
-  const { mutate: submitComment, isPending: isSubmitting } = useSubmitComment(postId)
+  const { mutate: submitComment, isPending: isSubmitting } =
+    useSubmitComment(postId)
+
+  const showSubmitToast = useCallback(
+    (message: string, variant: 'success' | 'error' = 'error') => {
+      setSubmitToast({ message, variant, visible: true })
+    },
+    []
+  )
 
   const handleSubmit = useCallback(() => {
     if (!inputValue.trim()) return
     submitComment(
       { content: inputValue.trim() },
-      { onSuccess: () => setInputValue('') }
+      {
+        onSuccess: () => setInputValue(''),
+        onError: (err) => {
+          if (!axios.isAxiosError(err)) {
+            showSubmitToast('요청에 실패했습니다. 잠시 후 다시 시도해주세요.')
+            return
+          }
+          const status = err.response?.status
+          if (status === 400) {
+            showSubmitToast('댓글 내용을 입력해주세요.')
+          } else if (status === 401) {
+            showSubmitToast('로그인이 필요합니다.')
+          } else if (status === 404) {
+            showSubmitToast('존재하지 않는 게시글입니다.')
+            navigate(ROUTES.COMMUNITY.LIST, { replace: true })
+          } else {
+            showSubmitToast('요청에 실패했습니다. 잠시 후 다시 시도해주세요.')
+          }
+        },
+      }
     )
-  }, [inputValue, submitComment])
+  }, [inputValue, submitComment, showSubmitToast])
 
   // 게시물이 삭제된 경우 (404) 여부를 쿼리 상태에서 직접 파생
   const isPostNotFound =
@@ -166,12 +196,20 @@ export function CommunityCommentsPage({ postId }: Props) {
 
   return (
     <section className="mt-8">
-      {/* 404 토스트 — 토스트가 닫히면 목록 페이지로 이동 */}
+      {/* 게시물 조회 404 토스트 — 닫히면 목록 페이지로 이동 */}
       <Toast
         message="해당 게시물은 없습니다."
         variant="error"
         visible={isPostNotFound}
         onClose={handleToastClose}
+      />
+
+      {/* 댓글 작성 에러 토스트 */}
+      <Toast
+        message={submitToast.message}
+        variant={submitToast.variant}
+        visible={submitToast.visible}
+        onClose={() => setSubmitToast((prev) => ({ ...prev, visible: false }))}
       />
 
       {/* 헤더 */}

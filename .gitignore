@@ -33,3 +33,8 @@ settings.local.json
 playwright-report/
 test-results/
 superpowers/
+
+# Figma MCP token
+.figma
+figma.config.*
+.figmarc

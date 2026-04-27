@@ -20,6 +20,7 @@ export function useCommentsInfiniteQuery(postId: number, enabled = true) {
       const url = new URL(lastPage.next)
       const nextPage = url.searchParams.get('page')
       return nextPage ? Number(nextPage) : undefined
-   enabled, },
+    },
+    enabled,
   })
 }

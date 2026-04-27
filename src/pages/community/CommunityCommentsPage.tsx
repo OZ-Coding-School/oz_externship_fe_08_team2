@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router'
+
 import axios from 'axios'
 import { Avatar, Toast } from '@/components'
 import { useCommentsInfiniteQuery } from '@/features/posts/comments'
@@ -92,11 +93,10 @@ function CommentItem({ comment }: { comment: Comment }) {
  * postId는 react-router의 useParams()로 자동으로 읽어옵니다.
  */
 interface Props {
-    postId: number
-  }
+  postId: number
+}
 
-export function CommunityCommentsPage() {
-  const { postId } = useParams<{ postId: string }>()
+export function CommunityCommentsPage({ postId }: Props) {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const loadMoreRef = useRef<HTMLDivElement>(null)
@@ -109,7 +109,7 @@ export function CommunityCommentsPage() {
     isLoading,
     isError,
     error,
-  } = useCommentsInfiniteQuery(isValidPostId ? postIdNum : 0)
+  } = useCommentsInfiniteQuery(postId, Boolean(postId))
 
   // 게시물이 삭제된 경우 (404) 여부를 쿼리 상태에서 직접 파생
   const isPostNotFound =
@@ -139,7 +139,6 @@ export function CommunityCommentsPage() {
 
   // ── 조기 반환 (hooks 이후) ──────────────────────────────
 
-
   const allComments = data?.pages.flatMap((page) => page.results) ?? []
   const totalCount = data?.pages[0]?.count ?? 0
 
@@ -147,7 +146,7 @@ export function CommunityCommentsPage() {
   if (isLoading) {
     return (
       <section className="mt-8">
-        <div className="text-text-muted py-8 text-center">...</div>
+        <div className="text-primary py-8 text-center text-8xl">...</div>
       </section>
     )
   }
@@ -200,7 +199,7 @@ export function CommunityCommentsPage() {
       {/* 무한스크롤 감지 영역 + 로딩 표시 */}
       <div ref={loadMoreRef} className="py-2">
         {isFetchingNextPage && (
-          <div className="text-text-muted py-4 text-center">...</div>
+          <div className="text-primary py-4 text-center text-8xl">...</div>
         )}
       </div>
     </section>

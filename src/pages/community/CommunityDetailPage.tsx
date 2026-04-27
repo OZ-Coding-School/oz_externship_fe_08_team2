@@ -73,7 +73,7 @@ export function CommunityDetailPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto w-full px-4 py-10" style={{ maxWidth: '944px' }}>
       {/* 뒤로가기 */}
       <button
         type="button"

@@ -4,7 +4,7 @@ import type { CommentsResponse } from './types'
 
 const PAGE_SIZE = 10
 
-export function useCommentsInfiniteQuery(postId: number) {
+export function useCommentsInfiniteQuery(postId: number, enabled = true) {
   return useInfiniteQuery({
     queryKey: ['posts', postId, 'comments'],
     queryFn: async ({ pageParam }) => {
@@ -20,6 +20,6 @@ export function useCommentsInfiniteQuery(postId: number) {
       const url = new URL(lastPage.next)
       const nextPage = url.searchParams.get('page')
       return nextPage ? Number(nextPage) : undefined
-    },
+   enabled, },
   })
 }

@@ -75,25 +75,12 @@ export function CommunityListPage() {
           </TabList>
         </Tabs>
 
-        <div className="flex shrink-0 items-center gap-1 pb-1 pl-4">
-          {SORT_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setSort(option.value)}
-              className={[
-                'cursor-pointer rounded px-2.5 py-1 text-sm transition-colors duration-150',
-                sort === option.value
-                  ? 'text-primary font-semibold'
-                  : 'text-text-muted hover:text-text-body',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <Dropdown
+          options={SORT_OPTIONS}
+          value={sort}
+          onChange={setSort}
+          className="w-32 shrink-0"
+        />
       </div>
     </div>
   )

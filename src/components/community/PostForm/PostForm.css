@@ -45,10 +45,39 @@
   background-color: #f6f7f9 !important;
 }
 
-/* 미리보기 h1/h2 하단 구분선 제거 */
-.post-editor-wrap .wmde-markdown h1,
-.post-editor-wrap .wmde-markdown h2 {
+/* Tailwind preflight가 초기화한 헤딩 스타일 복원 */
+.post-editor-wrap .wmde-markdown h1 {
+  font-size: 2em !important;
+  font-weight: 700 !important;
+  margin: 0.67em 0 !important;
   border-bottom: none !important;
+}
+.post-editor-wrap .wmde-markdown h2 {
+  font-size: 1.5em !important;
+  font-weight: 700 !important;
+  margin: 0.75em 0 !important;
+  border-bottom: none !important;
+}
+.post-editor-wrap .wmde-markdown h3 {
+  font-size: 1.25em !important;
+  font-weight: 600 !important;
+  margin: 0.83em 0 !important;
+}
+.post-editor-wrap .wmde-markdown h4 {
+  font-size: 1em !important;
+  font-weight: 600 !important;
+  margin: 1em 0 !important;
+}
+.post-editor-wrap .wmde-markdown h5 {
+  font-size: 0.875em !important;
+  font-weight: 600 !important;
+  margin: 1.17em 0 !important;
+}
+.post-editor-wrap .wmde-markdown h6 {
+  font-size: 0.85em !important;
+  font-weight: 600 !important;
+  margin: 1.33em 0 !important;
+  color: #6b7280 !important;
 }
 
 /* ── 드롭다운 팝업 ── */

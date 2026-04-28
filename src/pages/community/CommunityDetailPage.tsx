@@ -95,18 +95,8 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[944px] px-4 py-10">
-      {/* 뒤로가기 */}
-      <button
-        type="button"
-        onClick={() => navigate('/community')}
-        className="text-text-muted hover:text-text-body mb-8 flex items-center gap-1.5 text-sm transition-colors"
-      >
-        <span aria-hidden="true">←</span>
-        커뮤니티 목록
-      </button>
-
-      <article>
+    <main className="mx-auto w-full max-w-[944px] px-4 pt-16 pb-10">
+      <article className="flex flex-col">
         {/* 헤더: 카테고리 · 제목 · 작성자 · 메타 */}
         <PostHeader
           category={post.category_name}
@@ -127,6 +117,9 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           />
         )}
 
+        {/* 구분선 */}
+        <div className="mt-1 h-px w-full bg-gray-300" />
+
         {/* 본문 (HTML · 이미지 포함) */}
         <PostBody content={post.content} />
 
@@ -137,6 +130,9 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           isLoggedIn={isLoggedIn}
           onLike={handleLike}
         />
+
+        {/* 구분선 */}
+        <div className="h-px w-full bg-gray-300" />
 
         {/* 댓글 */}
         <CommunityCommentsPage postId={post.id} />

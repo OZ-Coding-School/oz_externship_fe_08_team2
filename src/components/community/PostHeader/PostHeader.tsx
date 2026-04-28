@@ -1,5 +1,4 @@
 import { Avatar } from '@/components/common/Avatar'
-import { Badge } from '@/components/common/Badge'
 
 export interface PostHeaderProps {
   category: string
@@ -20,23 +19,31 @@ export function PostHeader({
   viewCount,
 }: PostHeaderProps) {
   return (
-    <div className="border-border-base flex flex-col gap-3 border-b pb-6">
-      <Badge variant="primary" size="sm">
-        {category}
-      </Badge>
+    <div className="flex flex-col gap-6">
+      {/* 카테고리 + 제목 + 프로필 */}
+      <div className="flex flex-col gap-6">
+        <span className="text-primary text-xl font-bold">{category}</span>
 
-      <h1 className="text-text-heading text-2xl leading-snug font-bold">
-        {title}
-      </h1>
-
-      <div className="text-text-muted flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2">
-          <Avatar src={author.profileImage} alt={author.nickname} size="sm" />
-          <span className="text-text-body font-medium">{author.nickname}</span>
-          <span aria-hidden="true">·</span>
-          <span>{createdAt}</span>
+        <div className="flex items-start justify-between gap-6">
+          <h1 className="text-text-heading text-[32px] leading-snug font-bold">
+            {title}
+          </h1>
+          <div className="flex shrink-0 items-center gap-3">
+            <Avatar src={author.profileImage} alt={author.nickname} size="lg" />
+            <span className="text-base font-semibold text-gray-600">
+              {author.nickname}
+            </span>
+          </div>
         </div>
-        <span>조회 {viewCount.toLocaleString()}</span>
+      </div>
+
+      {/* 조회수 · 좋아요 · 시간 메타 정보 */}
+      <div className="flex items-center gap-1 text-base text-gray-400">
+        <span>조회수 {viewCount.toLocaleString()}</span>
+        <span className="text-disable" aria-hidden="true">
+          ·
+        </span>
+        <span>{createdAt}</span>
       </div>
     </div>
   )

@@ -3,7 +3,8 @@
  * @figma 커뮤니티 상세 페이지 (회원)        https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-10585&m=dev
  * @figma 커뮤니티 상세 페이지 (회원-작성자) https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-10696&m=dev
  */
-import { Suspense, useState } from 'react'
+import { Component, Suspense, useState } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { ConfirmModal } from '@/components/common/Modal/ConfirmModal'
 import { PostHeader } from '@/components/community/PostHeader'
@@ -15,6 +16,47 @@ import { usePostDetail } from '@/features/posts/detail'
 import { useTogglePostLike } from '@/features/posts/like'
 import { useDeletePost } from '@/features/posts/delete'
 import { useAuthStore } from '@/stores/authStore'
+
+interface DetailErrorBoundaryProps {
+  children: ReactNode
+}
+
+interface DetailErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+}
+
+class DetailErrorBoundary extends Component<
+  DetailErrorBoundaryProps,
+  DetailErrorBoundaryState
+> {
+  constructor(props: DetailErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): DetailErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('CommunityDetailPage error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="mx-auto max-w-4xl px-4 py-10">
+          <p className="text-text-muted">
+            게시글을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.
+          </p>
+        </main>
+      )
+    }
+
+    return this.props.children
+  }
+}
 
 function CommunityDetailContent({ postId }: { postId: number }) {
   const navigate = useNavigate()
@@ -53,7 +95,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   }
 
   return (
-    <main className="mx-auto w-full px-4 py-10" style={{ maxWidth: '944px' }}>
+    <main className="mx-auto w-full max-w-[944px] px-4 py-10">
       {/* 뒤로가기 */}
       <button
         type="button"
@@ -129,14 +171,16 @@ export function CommunityDetailPage() {
   }
 
   return (
-    <Suspense
-      fallback={
-        <main className="mx-auto max-w-4xl px-4 py-10">
-          <p className="text-text-muted">로딩 중...</p>
-        </main>
-      }
-    >
-      <CommunityDetailContent postId={postIdNum} />
-    </Suspense>
+    <DetailErrorBoundary>
+      <Suspense
+        fallback={
+          <main className="mx-auto max-w-4xl px-4 py-10">
+            <p className="text-text-muted">로딩 중...</p>
+          </main>
+        }
+      >
+        <CommunityDetailContent postId={postIdNum} />
+      </Suspense>
+    </DetailErrorBoundary>
   )
 }

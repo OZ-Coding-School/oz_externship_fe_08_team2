@@ -1,4 +1,4 @@
-# 댓글 기능 작업 진행 내용
+# 댓글 목록 작업 진행 내용
 
 > **담당자**: 최민제
 > **브랜치**: `feature/comment`
@@ -106,6 +106,6 @@ import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 
 | 커밋                       | 내용                                    |
 | -------------------------- | --------------------------------------- |
-| 작업 진행 파일 생성        | docs/progress/commentList.md 추가       |
+| 작업 진행 파일 생성        | docs/progress/CommentList.md 추가       |
 | feature 모듈 구현          | comments types, queries, handler, index |
 | CommunityCommentsPage 구현 | 무한스크롤, 멘션 파싱, 404 처리         |

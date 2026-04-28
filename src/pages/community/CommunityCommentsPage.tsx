@@ -99,6 +99,7 @@ interface Props {
 export function CommunityCommentsPage({ postId }: Props) {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const user = useAuthStore((state) => state.user)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = useState('')
   const [submitToast, setSubmitToast] = useState<{
@@ -220,23 +221,32 @@ export function CommunityCommentsPage({ postId }: Props) {
       {/* 댓글 입력창 — 로그인 사용자만 */}
       {isAuthenticated && (
         <div className="mb-6 flex gap-3">
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="댓글을 입력하세요..."
-            rows={3}
-            maxLength={500}
-            disabled={isSubmitting}
-            className="border-border-base bg-bg-base text-text-heading placeholder:text-text-muted focus:border-primary flex-1 resize-none rounded-sm border px-4 py-3 text-sm transition-colors duration-150 outline-none disabled:opacity-50"
+          <Avatar
+            src={user?.profileImage ?? null}
+            alt={user?.nickname ?? ''}
+            size="sm"
           />
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!inputValue.trim() || isSubmitting}
-            className="bg-primary text-text-inverse hover:bg-primary-700 h-fit self-end rounded-sm px-5 py-3 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting ? '등록 중...' : '작성'}
-          </button>
+          <div className="flex flex-1 flex-col gap-2">
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="댓글을 입력하세요..."
+              rows={3}
+              maxLength={500}
+              disabled={isSubmitting}
+              className="border-border-base bg-bg-base text-text-heading placeholder:text-text-muted focus:border-primary w-full resize-none rounded-sm border px-4 py-3 text-sm transition-colors duration-150 outline-none disabled:opacity-50"
+            />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!inputValue.trim() || isSubmitting}
+                className="bg-primary text-text-inverse hover:bg-primary-700 rounded-sm px-5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSubmitting ? '등록 중...' : '등록'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

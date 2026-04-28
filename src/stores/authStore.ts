@@ -28,3 +28,7 @@ export const useAuthStore = create<AuthState>()(
     { name: 'AuthStore' }
   )
 )
+
+if (typeof window !== 'undefined') {
+  ;(window as Record<string, unknown>).useAuthStore = useAuthStore
+}

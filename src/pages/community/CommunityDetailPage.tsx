@@ -94,6 +94,15 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     })
   }
 
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      await navigator.share({ url, title: post.title })
+    } else {
+      await navigator.clipboard.writeText(url)
+    }
+  }
+
   return (
     <main className="mx-auto w-full max-w-[944px] px-4 pt-16 pb-10">
       <article className="flex flex-col">
@@ -129,6 +138,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           isLiked={isLiked}
           isLoggedIn={isLoggedIn}
           onLike={handleLike}
+          onShare={handleShare}
         />
 
         {/* 구분선 */}

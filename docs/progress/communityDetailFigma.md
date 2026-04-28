@@ -1,6 +1,6 @@
 # 게시글 상세 페이지 Figma UI 반영 작업 내용
 
-> **담당자**: 이선영
+> **담당자**: 정선영
 > **브랜치**: `style/community-detail-figma-ui`
 > **관련 이슈**: `#34`
 > **PR**: `#36` (`style/community-detail-figma-ui` → `dev`)

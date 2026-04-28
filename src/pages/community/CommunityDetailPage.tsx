@@ -11,7 +11,7 @@ import { PostHeader } from '@/components/community/PostHeader'
 import { PostAuthorActions } from '@/components/community/PostAuthorActions'
 import { PostBody } from '@/components/community/PostBody'
 import { PostActions } from '@/components/community/PostActions'
-import { CommentSection } from '@/components/community/CommentSection'
+import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 import { usePostDetail } from '@/features/posts/detail'
 import { useTogglePostLike } from '@/features/posts/like'
 import { useDeletePost } from '@/features/posts/delete'
@@ -138,11 +138,8 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           onLike={handleLike}
         />
 
-        {/* 댓글 (별도 이슈) */}
-        <CommentSection
-          postId={post.id}
-          commentCount={post.comment_count ?? 0}
-        />
+        {/* 댓글 */}
+        <CommunityCommentsPage postId={post.id} />
       </article>
 
       {/* 게시글 삭제 확인 모달 */}

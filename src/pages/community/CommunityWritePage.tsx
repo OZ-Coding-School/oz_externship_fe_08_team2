@@ -1,10 +1,9 @@
 /**
  * @figma 커뮤니티 - 글작성하기  https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5561&m=dev
  */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import type { AxiosError } from 'axios'
-import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/constants/routes'
 import { useCategories } from '@/features/posts/categories'
 import { useCreatePost } from '@/features/posts/write'
@@ -21,18 +20,17 @@ interface ToastState {
 
 export function CommunityWritePage() {
   const navigate = useNavigate()
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
     variant: 'success',
   })
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
+  //   }
+  // }, [isAuthenticated, navigate])
 
   const {
     data: categories = [],
@@ -67,8 +65,8 @@ export function CommunityWritePage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <PageHeader title="게시글 작성" className="mb-8" />
+    <div className="mx-auto w-full px-4 py-8" style={{ maxWidth: '944px' }}>
+      <PageHeader title="커뮤니티 게시글 작성" className="mb-8" />
       <PostForm
         mode="write"
         categories={categories}

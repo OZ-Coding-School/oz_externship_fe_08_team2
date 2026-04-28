@@ -68,8 +68,7 @@ export function CommunityWritePage() {
 
   return (
     <div className="mx-auto w-full px-4 py-8" style={{ maxWidth: '944px' }}>
-      <PageHeader title="커뮤니티 게시글 작성" className="mb-4" />
-      <hr className="border-border-base mb-8" />
+      <PageHeader title="커뮤니티 게시글 작성" className="mb-8" />
       <PostForm
         mode="write"
         categories={categories}

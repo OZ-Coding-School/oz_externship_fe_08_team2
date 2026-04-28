@@ -45,6 +45,12 @@
   background-color: #f6f7f9 !important;
 }
 
+/* 미리보기 h1/h2 하단 구분선 제거 */
+.post-editor-wrap .wmde-markdown h1,
+.post-editor-wrap .wmde-markdown h2 {
+  border-bottom: none !important;
+}
+
 /* ── 드롭다운 팝업 ── */
 .toolbar-popup {
   background: #fff;

@@ -1,9 +1,9 @@
-/* MDEditor 툴바: 2행 세로 스택 + 각 행 가운데 정렬 */
+/* ── 툴바: 2행 세로 스택 + 가운데 정렬 ── */
 .post-editor-wrap .w-md-editor-toolbar {
   display: flex !important;
   flex-direction: column !important;
   padding: 2px 0 !important;
-  border-bottom: 1px solid var(--color-border-base, #e2e8f0) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .post-editor-wrap .w-md-editor-toolbar > ul {
@@ -18,44 +18,42 @@
 }
 
 .post-editor-wrap .w-md-editor-toolbar > ul + ul {
-  border-top: 1px solid var(--color-border-base, #e2e8f0) !important;
+  border-top: 1px solid #e9ecef !important;
 }
 
-/* 툴바 버튼 기본 크기 */
+/* 툴바 버튼 기본 */
 .post-editor-wrap .w-md-editor-toolbar li button {
   height: 28px !important;
   min-width: 28px !important;
-  padding: 0 6px !important;
-  display: flex !important;
+  padding: 0 5px !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   border-radius: 4px !important;
   font-size: 13px !important;
+  box-sizing: border-box !important;
 }
 
-/* 드롭다운 label 버튼은 자동 너비 */
-.post-editor-wrap .w-md-editor-toolbar li button.label-btn {
-  width: auto !important;
-  min-width: 60px !important;
-  gap: 2px !important;
-  font-size: 12px !important;
-  white-space: nowrap !important;
-}
-
-/* 에디터 반응형 높이 */
+/* 에디터 반응형 높이 (더 크게) */
 .post-editor-wrap .w-md-editor {
-  height: clamp(320px, 45vh, 600px) !important;
+  height: clamp(480px, 60vh, 760px) !important;
 }
 
-/* 드롭다운 팝업 스타일 */
+/* 미리보기 패널 배경 회색 */
+.post-editor-wrap .w-md-editor-preview,
+.post-editor-wrap .wmde-markdown {
+  background-color: #f6f7f9 !important;
+}
+
+/* ── 드롭다운 팝업 ── */
 .toolbar-popup {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 4px;
-  min-width: 120px;
-  z-index: 100;
+  min-width: 110px;
+  z-index: 200;
 }
 
 .toolbar-popup button {
@@ -69,30 +67,31 @@
   cursor: pointer;
   border-radius: 4px;
   white-space: nowrap;
+  color: #374151;
 }
 
 .toolbar-popup button:hover {
   background: #f1f5f9;
 }
 
-/* 색상 팔레트 팝업 */
+/* ── 색상 팔레트 ── */
 .color-palette {
   display: grid;
-  grid-template-columns: repeat(5, 20px);
+  grid-template-columns: repeat(5, 22px);
   gap: 3px;
-  padding: 6px;
+  padding: 7px;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .color-swatch {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 3px;
   cursor: pointer;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   transition: transform 0.1s;
 }
 

@@ -12,8 +12,11 @@ import {
   AlignRight,
   AlignJustify,
   List,
-  ListOrdered,
   ChevronDown,
+  ArrowUpDown,
+  RemoveFormatting,
+  IndentIncrease,
+  IndentDecrease,
 } from 'lucide-react'
 import type { Category } from '@/features/posts/categories'
 import { Dropdown } from '@/components/common/Dropdown'
@@ -94,7 +97,33 @@ const PALETTE_COLORS = [
   '#c27ba0',
 ]
 
-/* ── 컴포넌트 외부 정적 커맨드 ── */
+/* 글꼴·크기 버튼 pill 스타일 */
+const PILL: React.CSSProperties = {
+  borderRadius: 6,
+  background: '#f0f2f5',
+  border: '1px solid #e2e8f0',
+  padding: '0 10px',
+  height: 26,
+  width: 'auto',
+  minWidth: 'auto',
+  fontSize: 12,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  cursor: 'pointer',
+  color: '#374151',
+  fontWeight: 400,
+}
+
+/* ── getState 안전 호출 헬퍼 ── */
+function safeSelected(
+  getState?: () => false | { selectedText: string }
+): string {
+  const s = getState?.()
+  return (s && 'selectedText' in s ? s.selectedText : '') || ''
+}
+
+/* ── 정적 커맨드 ── */
 
 const undoCommand: ICommand = {
   name: 'undo',
@@ -126,16 +155,11 @@ const redoCommand: ICommand = {
 
 const fontFamilyCommand: ICommand = {
   name: 'font-family',
-  keyCommand: 'font-family',
+  keyCommand: 'group',
   groupName: 'font-family',
-  buttonProps: {
-    'aria-label': '글꼴',
-    title: '글꼴',
-    className: 'label-btn',
-    style: { width: 'auto', minWidth: 72, fontSize: 11 },
-  },
+  buttonProps: { 'aria-label': '글꼴', title: '글꼴', style: PILL },
   icon: (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
       기본서체 <ChevronDown size={10} />
     </span>
   ),
@@ -147,8 +171,7 @@ const fontFamilyCommand: ICommand = {
           type="button"
           style={{ fontFamily: value === 'inherit' ? undefined : value }}
           onClick={() => {
-            const s = getState?.()
-            const inner = (s && 'selectedText' in s ? s.selectedText : '') || ''
+            const inner = safeSelected(getState)
             textApi?.replaceSelection(
               `<span style="font-family: ${value}">${inner}</span>`
             )
@@ -165,15 +188,11 @@ const fontFamilyCommand: ICommand = {
 
 const fontSizeCommand: ICommand = {
   name: 'font-size',
-  keyCommand: 'font-size',
+  keyCommand: 'group',
   groupName: 'font-size',
-  buttonProps: {
-    'aria-label': '글자 크기',
-    title: '글자 크기',
-    style: { width: 'auto', minWidth: 44, fontSize: 11 },
-  },
+  buttonProps: { 'aria-label': '글자 크기', title: '글자 크기', style: PILL },
   icon: (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
       16 <ChevronDown size={10} />
     </span>
   ),
@@ -184,8 +203,7 @@ const fontSizeCommand: ICommand = {
           key={size}
           type="button"
           onClick={() => {
-            const s = getState?.()
-            const inner = (s && 'selectedText' in s ? s.selectedText : '') || ''
+            const inner = safeSelected(getState)
             textApi?.replaceSelection(
               `<span style="font-size: ${size}px">${inner}</span>`
             )
@@ -218,7 +236,7 @@ function makeColorCommand(
 ): ICommand {
   return {
     name,
-    keyCommand: name,
+    keyCommand: 'group',
     groupName: name,
     buttonProps: { 'aria-label': label, title: label },
     icon,
@@ -231,9 +249,7 @@ function makeColorCommand(
             style={{ background: color }}
             title={color}
             onClick={() => {
-              const s = getState?.()
-              const selected =
-                (s && 'selectedText' in s ? s.selectedText : '') || ''
+              const selected = safeSelected(getState)
               textApi?.replaceSelection(wrap(color, selected))
               close()
             }}
@@ -248,16 +264,19 @@ function makeColorCommand(
 const bgColorCommand = makeColorCommand(
   'bg-color',
   '배경색',
-  <span
-    style={{
-      display: 'inline-block',
-      width: 14,
-      height: 14,
-      background: '#ffff00',
-      border: '1px solid #ccc',
-      borderRadius: 2,
-    }}
-  />,
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+    <span
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: 3,
+        background: '#4285f4',
+        border: '1px solid rgba(0,0,0,0.12)',
+        display: 'inline-block',
+      }}
+    />
+    <ChevronDown size={10} />
+  </span>,
   (color, text) => `<mark style="background-color: ${color}">${text}</mark>`
 )
 
@@ -266,13 +285,23 @@ const textColorCommand = makeColorCommand(
   '글자색',
   <span
     style={{
-      fontWeight: 700,
-      fontSize: 13,
-      borderBottom: '2px solid #e53e3e',
+      display: 'inline-flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 2,
       lineHeight: 1,
     }}
   >
-    A
+    <span style={{ fontWeight: 700, fontSize: 13 }}>A</span>
+    <span
+      style={{
+        width: 14,
+        height: 3,
+        background: '#e53e3e',
+        borderRadius: 1,
+        display: 'block',
+      }}
+    />
   </span>,
   (color, text) => `<span style="color: ${color}">${text}</span>`
 )
@@ -282,11 +311,10 @@ const alignLeftCommand: ICommand = {
   keyCommand: 'align-left',
   buttonProps: { 'aria-label': '왼쪽 정렬', title: '왼쪽 정렬' },
   icon: <AlignLeft size={14} />,
-  execute: (state, api) => {
+  execute: (state, api) =>
     api.replaceSelection(
       `<div style="text-align: left">${state.selectedText}</div>`
-    )
-  },
+    ),
 }
 
 const alignCenterCommand: ICommand = {
@@ -294,11 +322,10 @@ const alignCenterCommand: ICommand = {
   keyCommand: 'align-center',
   buttonProps: { 'aria-label': '가운데 정렬', title: '가운데 정렬' },
   icon: <AlignCenter size={14} />,
-  execute: (state, api) => {
+  execute: (state, api) =>
     api.replaceSelection(
       `<div style="text-align: center">${state.selectedText}</div>`
-    )
-  },
+    ),
 }
 
 const alignRightCommand: ICommand = {
@@ -306,11 +333,10 @@ const alignRightCommand: ICommand = {
   keyCommand: 'align-right',
   buttonProps: { 'aria-label': '오른쪽 정렬', title: '오른쪽 정렬' },
   icon: <AlignRight size={14} />,
-  execute: (state, api) => {
+  execute: (state, api) =>
     api.replaceSelection(
       `<div style="text-align: right">${state.selectedText}</div>`
-    )
-  },
+    ),
 }
 
 const alignJustifyCommand: ICommand = {
@@ -318,64 +344,127 @@ const alignJustifyCommand: ICommand = {
   keyCommand: 'align-justify',
   buttonProps: { 'aria-label': '양쪽 정렬', title: '양쪽 정렬' },
   icon: <AlignJustify size={14} />,
-  execute: (state, api) => {
+  execute: (state, api) =>
     api.replaceSelection(
       `<div style="text-align: justify">${state.selectedText}</div>`
-    )
-  },
+    ),
 }
 
-const unorderedListCmd: ICommand = {
-  name: 'unordered-list',
-  keyCommand: 'unordered-list',
-  buttonProps: { 'aria-label': '글머리 목록', title: '글머리 목록' },
-  icon: <List size={14} />,
+const listDropdownCmd: ICommand = {
+  name: 'list-style',
+  keyCommand: 'group',
+  groupName: 'list-style',
+  buttonProps: { 'aria-label': '목록', title: '목록' },
+  icon: (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+      <List size={13} />
+      <ChevronDown size={10} />
+    </span>
+  ),
+  children: ({ close, getState, textApi }) => (
+    <div className="toolbar-popup">
+      <button
+        type="button"
+        onClick={() => {
+          const text = safeSelected(getState)
+          const lines = text
+            ? text
+                .split('\n')
+                .map((l) => `- ${l}`)
+                .join('\n')
+            : '- '
+          textApi?.replaceSelection(lines)
+          close()
+        }}
+      >
+        글머리 목록
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          const text = safeSelected(getState)
+          const lines = text
+            ? text
+                .split('\n')
+                .map((l, i) => `${i + 1}. ${l}`)
+                .join('\n')
+            : '1. '
+          textApi?.replaceSelection(lines)
+          close()
+        }}
+      >
+        번호 목록
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          const text = safeSelected(getState)
+          const lines = text
+            ? text
+                .split('\n')
+                .map((l) => `- [ ] ${l}`)
+                .join('\n')
+            : '- [ ] '
+          textApi?.replaceSelection(lines)
+          close()
+        }}
+      >
+        체크 목록
+      </button>
+    </div>
+  ),
+  execute: () => {},
+}
+
+const lineHeightCmd: ICommand = {
+  name: 'line-height',
+  keyCommand: 'group',
+  groupName: 'line-height',
+  buttonProps: { 'aria-label': '줄 간격', title: '줄 간격' },
+  icon: <ArrowUpDown size={14} />,
+  children: ({ close, getState, textApi }) => (
+    <div className="toolbar-popup" style={{ minWidth: 80 }}>
+      {['1', '1.5', '2', '2.5', '3'].map((h) => (
+        <button
+          key={h}
+          type="button"
+          onClick={() => {
+            const text = safeSelected(getState)
+            textApi?.replaceSelection(
+              `<div style="line-height: ${h}">${text}</div>`
+            )
+            close()
+          }}
+        >
+          {h}배
+        </button>
+      ))}
+    </div>
+  ),
+  execute: () => {},
+}
+
+const outdentCmd: ICommand = {
+  name: 'outdent',
+  keyCommand: 'outdent',
+  buttonProps: { 'aria-label': '내어쓰기', title: '내어쓰기' },
+  icon: <IndentDecrease size={14} />,
   execute: (state, api) => {
     const lines = state.selectedText
       ? state.selectedText
           .split('\n')
-          .map((l) => `- ${l}`)
+          .map((l) => (l.startsWith('  ') ? l.slice(2) : l))
           .join('\n')
-      : '- '
+      : ''
     api.replaceSelection(lines)
   },
 }
 
-const orderedListCmd: ICommand = {
-  name: 'ordered-list',
-  keyCommand: 'ordered-list',
-  buttonProps: { 'aria-label': '번호 목록', title: '번호 목록' },
-  icon: <ListOrdered size={14} />,
-  execute: (state, api) => {
-    const lines = state.selectedText
-      ? state.selectedText
-          .split('\n')
-          .map((l, i) => `${i + 1}. ${l}`)
-          .join('\n')
-      : '1. '
-    api.replaceSelection(lines)
-  },
-}
-
-const indentCommand: ICommand = {
+const indentCmd: ICommand = {
   name: 'indent',
   keyCommand: 'indent',
   buttonProps: { 'aria-label': '들여쓰기', title: '들여쓰기' },
-  icon: (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="9" y1="12" x2="21" y2="12" />
-      <line x1="9" y1="18" x2="21" y2="18" />
-      <polyline points="3 9 6 12 3 15" />
-    </svg>
-  ),
+  icon: <IndentIncrease size={14} />,
   execute: (state, api) => {
     const lines = state.selectedText
       ? state.selectedText
@@ -387,33 +476,18 @@ const indentCommand: ICommand = {
   },
 }
 
-const outdentCommand: ICommand = {
-  name: 'outdent',
-  keyCommand: 'outdent',
-  buttonProps: { 'aria-label': '내어쓰기', title: '내어쓰기' },
-  icon: (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="9" y1="12" x2="21" y2="12" />
-      <line x1="9" y1="18" x2="21" y2="18" />
-      <polyline points="6 9 3 12 6 15" />
-    </svg>
-  ),
+const clearFormatCmd: ICommand = {
+  name: 'clear-format',
+  keyCommand: 'clear-format',
+  buttonProps: { 'aria-label': '서식 제거', title: '서식 제거' },
+  icon: <RemoveFormatting size={14} />,
   execute: (state, api) => {
-    const lines = state.selectedText
-      ? state.selectedText
-          .split('\n')
-          .map((l) => (l.startsWith('  ') ? l.slice(2) : l))
-          .join('\n')
-      : ''
-    api.replaceSelection(lines)
+    const cleaned = state.selectedText
+      .replace(/\*\*(.*?)\*\*/gs, '$1')
+      .replace(/\*(.*?)\*/gs, '$1')
+      .replace(/~~(.*?)~~/gs, '$1')
+      .replace(/<[^>]+>/gs, '')
+    api.replaceSelection(cleaned)
   },
 }
 
@@ -449,9 +523,7 @@ export function PostForm({
     value: PostFormValues[K]
   ) => {
     setValues((prev) => ({ ...prev, [key]: value }))
-    if (errors[key]) {
-      setErrors((prev) => ({ ...prev, [key]: undefined }))
-    }
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }))
   }
 
   const validate = (): boolean => {
@@ -477,7 +549,6 @@ export function PostForm({
     })
   }
 
-  /* 이미지 업로드 커맨드 (presigned URL) */
   const imageCommand: ICommand = useMemo(
     () => ({
       name: 'image',
@@ -552,80 +623,72 @@ export function PostForm({
   /* 툴바 Row 2 */
   const editorExtraCommands: ICommand[] = useMemo(
     () => [
+      listDropdownCmd,
+      mdCommands.divider,
       alignLeftCommand,
       alignCenterCommand,
       alignRightCommand,
       alignJustifyCommand,
       mdCommands.divider,
-      unorderedListCmd,
-      orderedListCmd,
+      lineHeightCmd,
       mdCommands.divider,
-      indentCommand,
-      outdentCommand,
+      outdentCmd,
+      indentCmd,
+      mdCommands.divider,
+      clearFormatCmd,
     ],
     []
   )
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      {/* 카테고리 + 제목 카드 */}
-      <div className="border-border-base bg-bg-base flex flex-col gap-4 rounded-lg border p-6">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-text-heading text-sm font-medium">
-            카테고리
-          </label>
-          <Dropdown
-            options={categoryOptions}
-            value={values.categoryId}
-            onChange={(v) => handleChange('categoryId', v)}
-            placeholder="카테고리를 선택해 주세요."
-            disabled={isCategoriesLoading || isCategoriesError}
-          />
-          {errors.categoryId && (
-            <p className="text-error text-xs" role="alert">
-              {errors.categoryId}
-            </p>
-          )}
-          {isCategoriesError && (
-            <p className="text-error text-xs" role="alert">
-              카테고리를 불러오는데 실패했습니다.
-            </p>
-          )}
-        </div>
+      {/* 카테고리 + 제목 카드 (라벨 없음) */}
+      <div className="border-border-base bg-bg-base flex flex-col gap-3 rounded-2xl border p-6">
+        <Dropdown
+          options={categoryOptions}
+          value={values.categoryId}
+          onChange={(v) => handleChange('categoryId', v)}
+          placeholder="카테고리 선택"
+          disabled={isCategoriesLoading || isCategoriesError}
+        />
+        {errors.categoryId && (
+          <p className="text-error -mt-2 text-xs" role="alert">
+            {errors.categoryId}
+          </p>
+        )}
+        {isCategoriesError && (
+          <p className="text-error -mt-2 text-xs" role="alert">
+            카테고리를 불러오는데 실패했습니다.
+          </p>
+        )}
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-text-heading text-sm font-medium">제목</label>
-          <div
-            className={[
-              'flex items-center rounded-sm border px-4 transition-colors duration-150',
-              'bg-primary-50 border-primary-200 focus-within:border-primary',
-              errors.title ? 'border-error-dark' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            <input
-              type="text"
-              value={values.title}
-              maxLength={TITLE_MAX}
-              placeholder="제목을 입력해 주세요."
-              onChange={(e) => handleChange('title', e.target.value)}
-              className="text-text-heading placeholder:text-text-muted h-12 w-full bg-transparent text-base outline-none"
-            />
-          </div>
-          {errors.title && (
-            <p className="text-error text-xs" role="alert">
-              {errors.title}
-            </p>
-          )}
+        <div
+          className={[
+            'flex items-center rounded-lg border-0 px-4',
+            'bg-primary-50',
+            errors.title ? 'ring-1 ring-red-400' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          <input
+            type="text"
+            value={values.title}
+            maxLength={TITLE_MAX}
+            placeholder="제목을 입력해 주세요"
+            onChange={(e) => handleChange('title', e.target.value)}
+            className="text-text-heading placeholder:text-text-muted h-14 w-full bg-transparent text-base outline-none"
+          />
         </div>
+        {errors.title && (
+          <p className="text-error -mt-2 text-xs" role="alert">
+            {errors.title}
+          </p>
+        )}
       </div>
 
       {/* 에디터 카드 */}
-      <div className="border-border-base bg-bg-base flex flex-col gap-1.5 rounded-lg border p-6">
-        <div className="flex items-center justify-between">
-          <label className="text-text-heading text-sm font-medium">내용</label>
-        </div>
+      <div className="border-border-base bg-bg-base flex flex-col gap-2 rounded-2xl border p-4">
         <div data-color-mode="light" className="post-editor-wrap">
           <MDEditor
             value={values.content}
@@ -636,17 +699,17 @@ export function PostForm({
           />
         </div>
         {isUploading && (
-          <p className="text-text-muted mt-1 text-xs" aria-live="polite">
+          <p className="text-text-muted text-xs" aria-live="polite">
             이미지 업로드 중...
           </p>
         )}
         {imageError && (
-          <p className="text-error mt-1 text-xs" role="alert">
+          <p className="text-error text-xs" role="alert">
             {imageError}
           </p>
         )}
         {errors.content && (
-          <p className="text-error mt-1 text-xs" role="alert">
+          <p className="text-error text-xs" role="alert">
             {errors.content}
           </p>
         )}

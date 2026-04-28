@@ -32,11 +32,11 @@ export function PostActions({
         type="button"
         onClick={handleShare}
         aria-label="게시글 링크 복사"
-        className="flex items-center gap-1 rounded-full border border-gray-300 px-4 py-2.5 text-xs text-gray-500 transition-colors duration-150 outline-none hover:border-gray-400 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+        className="border-border-base text-text-body hover:text-text-heading flex items-center gap-1.5 rounded-full border px-4 py-2.5 text-sm transition-colors duration-150 outline-none hover:border-gray-400 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
       >
         <svg
-          width="18"
-          height="18"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -45,11 +45,10 @@ export function PostActions({
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-          <polyline points="16 6 12 2 8 6" />
-          <line x1="12" y1="2" x2="12" y2="15" />
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
-        <span className="font-normal">{copied ? '복사됨!' : '공유'}</span>
+        <span className="font-medium">{copied ? '복사됨!' : '공유하기'}</span>
       </button>
 
       {/* 좋아요 버튼 */}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
+import { MessageCircle, ArrowUpDown } from 'lucide-react'
 import { Avatar, Toast } from '@/components'
 import {
   useCommentsInfiniteQuery,
@@ -14,10 +15,8 @@ import type { Comment, TaggedUser } from '@/features/posts/comments'
 function formatDate(isoString: string): string {
   return new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+    month: 'long',
+    day: 'numeric',
   }).format(new Date(isoString))
 }
 
@@ -59,21 +58,32 @@ function parseContent(
 }
 
 // ─── 댓글 단일 아이템 ─────────────────────────────────────
-function CommentItem({ comment }: { comment: Comment }) {
+function CommentItem({ comment, isOwn }: { comment: Comment; isOwn: boolean }) {
   return (
-    <div className="flex gap-3 border-b border-gray-200 py-4">
+    <div className="flex gap-3 py-4">
       <Avatar
         src={comment.author.profile_img_url}
         alt={comment.author.nickname}
         size="sm"
       />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 border-b border-gray-200 pb-4">
         <div className="mb-1 flex items-center gap-2">
           <span className="text-text-heading text-sm font-semibold">
             {comment.author.nickname}
           </span>
           <span className="text-text-muted text-xs">
             {formatDate(comment.created_at)}
+            {isOwn && (
+              <>
+                {' | '}
+                <button
+                  type="button"
+                  className="transition-colors duration-150 hover:text-red-500"
+                >
+                  삭제
+                </button>
+              </>
+            )}
           </span>
         </div>
         <p className="text-text-body text-sm leading-relaxed break-words">
@@ -102,11 +112,7 @@ export function CommunityCommentsPage({ postId }: Props) {
   const user = useAuthStore((state) => state.user)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = useState('')
-  const [submitToast, setSubmitToast] = useState<{
-    message: string
-    variant: 'success' | 'error'
-    visible: boolean
-  }>({ message: '', variant: 'error', visible: false })
+  const [submitError, setSubmitError] = useState(false)
 
   const {
     data,
@@ -121,41 +127,6 @@ export function CommunityCommentsPage({ postId }: Props) {
   const { mutate: submitComment, isPending: isSubmitting } =
     useSubmitComment(postId)
 
-  const showSubmitToast = useCallback(
-    (message: string, variant: 'success' | 'error' = 'error') => {
-      setSubmitToast({ message, variant, visible: true })
-    },
-    []
-  )
-
-  const handleSubmit = useCallback(() => {
-    if (!inputValue.trim()) return
-    submitComment(
-      { content: inputValue.trim() },
-      {
-        onSuccess: () => setInputValue(''),
-        onError: (err) => {
-          if (!axios.isAxiosError(err)) {
-            showSubmitToast('요청에 실패했습니다. 잠시 후 다시 시도해주세요.')
-            return
-          }
-          const status = err.response?.status
-          if (status === 400) {
-            showSubmitToast('댓글 내용을 입력해주세요.')
-          } else if (status === 401) {
-            showSubmitToast('로그인이 필요합니다.')
-            navigate(ROUTES.AUTH.LOGIN, { replace: true })
-          } else if (status === 404) {
-            showSubmitToast('존재하지 않는 게시글입니다.')
-            navigate(ROUTES.COMMUNITY.LIST, { replace: true })
-          } else {
-            showSubmitToast('요청에 실패했습니다. 잠시 후 다시 시도해주세요.')
-          }
-        },
-      }
-    )
-  }, [inputValue, submitComment, showSubmitToast, navigate])
-
   // 게시물이 삭제된 경우 (404) 여부를 쿼리 상태에서 직접 파생
   const isPostNotFound =
     isError && axios.isAxiosError(error) && error.response?.status === 404
@@ -163,6 +134,17 @@ export function CommunityCommentsPage({ postId }: Props) {
   const handleToastClose = useCallback(() => {
     navigate(ROUTES.COMMUNITY.LIST, { replace: true })
   }, [navigate])
+
+  const handleSubmit = useCallback(() => {
+    if (!inputValue.trim()) return
+    submitComment(
+      { content: inputValue.trim() },
+      {
+        onSuccess: () => setInputValue(''),
+        onError: () => setSubmitError(true),
+      }
+    )
+  }, [inputValue, submitComment])
 
   // 무한스크롤 IntersectionObserver
   useEffect(() => {
@@ -206,43 +188,31 @@ export function CommunityCommentsPage({ postId }: Props) {
         onClose={handleToastClose}
       />
 
-      {/* 댓글 작성 에러 토스트 */}
-      <Toast
-        message={submitToast.message}
-        variant={submitToast.variant}
-        visible={submitToast.visible}
-        onClose={() => setSubmitToast((prev) => ({ ...prev, visible: false }))}
-      />
-
-      {/* 헤더 */}
-      <h2 className="text-text-heading mb-4 text-lg font-semibold">
-        댓글 {totalCount}개
-      </h2>
-
       {/* 댓글 입력창 — 로그인 사용자만 */}
       {isAuthenticated && (
-        <div className="mb-6 flex gap-3">
-          <Avatar
-            src={user?.profileImage ?? null}
-            alt={user?.nickname ?? ''}
-            size="sm"
+        <div className="mb-4">
+          <Toast
+            message="댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요."
+            variant="error"
+            visible={submitError}
+            onClose={() => setSubmitError(false)}
           />
-          <div className="flex flex-1 flex-col gap-2">
+          <div className="border-border-base focus-within:border-primary relative rounded-lg border transition-colors duration-150">
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="댓글을 입력하세요..."
-              rows={3}
+              placeholder="개인정보를 공유 및 요청하거나, 명예 훼손, 무단 광고, 불법 정보 유포 시 모니터링 후 삭제될 수 있습니다."
+              rows={2}
               maxLength={500}
               disabled={isSubmitting}
-              className="border-border-base bg-bg-base text-text-heading placeholder:text-text-muted focus:border-primary w-full resize-none rounded-sm border px-4 py-3 text-sm transition-colors duration-150 outline-none disabled:opacity-50"
+              className="bg-bg-base text-text-heading placeholder:text-text-muted w-full resize-none rounded-lg px-4 py-3 pb-10 text-sm outline-none disabled:opacity-50"
             />
-            <div className="flex justify-end">
+            <div className="absolute right-3 bottom-2">
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!inputValue.trim() || isSubmitting}
-                className="bg-primary text-text-inverse hover:bg-primary-700 rounded-sm px-5 py-2 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-primary text-text-inverse hover:bg-primary-700 rounded-full px-5 py-1.5 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? '등록 중...' : '등록'}
               </button>
@@ -250,6 +220,21 @@ export function CommunityCommentsPage({ postId }: Props) {
           </div>
         </div>
       )}
+
+      {/* 댓글 수 + 최신순 — 같은 줄 */}
+      <div className="mb-1 flex items-center justify-between">
+        <h2 className="text-text-heading flex items-center gap-1.5 text-lg font-semibold">
+          <MessageCircle size={20} />
+          댓글 {totalCount}개
+        </h2>
+        <button
+          type="button"
+          className="text-text-muted hover:text-text-heading flex items-center gap-1 text-sm transition-colors duration-150"
+        >
+          최신순
+          <ArrowUpDown size={14} />
+        </button>
+      </div>
 
       {/* 댓글 목록 */}
       {allComments.length === 0 ? (
@@ -259,7 +244,11 @@ export function CommunityCommentsPage({ postId }: Props) {
       ) : (
         <div>
           {allComments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              isOwn={comment.author.nickname === user?.nickname}
+            />
           ))}
         </div>
       )}

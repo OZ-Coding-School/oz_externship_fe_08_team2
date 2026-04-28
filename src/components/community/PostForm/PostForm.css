@@ -1,0 +1,102 @@
+/* MDEditor 툴바: 2행 세로 스택 + 각 행 가운데 정렬 */
+.post-editor-wrap .w-md-editor-toolbar {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 2px 0 !important;
+  border-bottom: 1px solid var(--color-border-base, #e2e8f0) !important;
+}
+
+.post-editor-wrap .w-md-editor-toolbar > ul {
+  display: flex !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 3px 4px !important;
+  list-style: none !important;
+  gap: 1px;
+}
+
+.post-editor-wrap .w-md-editor-toolbar > ul + ul {
+  border-top: 1px solid var(--color-border-base, #e2e8f0) !important;
+}
+
+/* 툴바 버튼 기본 크기 */
+.post-editor-wrap .w-md-editor-toolbar li button {
+  height: 28px !important;
+  min-width: 28px !important;
+  padding: 0 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+}
+
+/* 드롭다운 label 버튼은 자동 너비 */
+.post-editor-wrap .w-md-editor-toolbar li button.label-btn {
+  width: auto !important;
+  min-width: 60px !important;
+  gap: 2px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+/* 에디터 반응형 높이 */
+.post-editor-wrap .w-md-editor {
+  height: clamp(320px, 45vh, 600px) !important;
+}
+
+/* 드롭다운 팝업 스타일 */
+.toolbar-popup {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: 4px;
+  min-width: 120px;
+  z-index: 100;
+}
+
+.toolbar-popup button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 5px 10px;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.toolbar-popup button:hover {
+  background: #f1f5f9;
+}
+
+/* 색상 팔레트 팝업 */
+.color-palette {
+  display: grid;
+  grid-template-columns: repeat(5, 20px);
+  gap: 3px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+  border-color: #64748b;
+}

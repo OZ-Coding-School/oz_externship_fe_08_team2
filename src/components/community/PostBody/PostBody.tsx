@@ -1,9 +1,43 @@
+import DOMPurify from 'dompurify'
+
 export interface PostBodyProps {
   /**
    * HTML 문자열 (리치텍스트 에디터 출력)
    * 이미지, 제목, 목록, 인용구 등 포함 가능
    */
   content: string
+}
+
+const ALLOWED_TAGS = [
+  'p',
+  'br',
+  'b',
+  'i',
+  'em',
+  'strong',
+  'a',
+  'ul',
+  'ol',
+  'li',
+  'h1',
+  'h2',
+  'h3',
+  'blockquote',
+  'pre',
+  'code',
+  'img',
+  'hr',
+  'span',
+  'div',
+]
+
+const ALLOWED_ATTR = ['href', 'src', 'alt', 'class', 'target', 'rel']
+
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+  })
 }
 
 export function PostBody({ content }: PostBodyProps) {
@@ -33,7 +67,7 @@ export function PostBody({ content }: PostBodyProps) {
         /* 구분선 */
         '[&_hr]:border-border-base [&_hr]:my-6',
       ].join(' ')}
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
     />
   )
 }

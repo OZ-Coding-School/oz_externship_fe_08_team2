@@ -55,7 +55,8 @@ export const commentsHandlers = [
     return HttpResponse.json(newComment, { status: 201 })
   }),
 
-  http.get('/api/v1/posts/:postId/comments', ({ params, request }) => {
+  http.get('/api/v1/posts/:postId/comments', async ({ params, request }) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     const { postId } = params
 
     if (postId === '999') {

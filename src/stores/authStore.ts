@@ -30,5 +30,5 @@ export const useAuthStore = create<AuthState>()(
 )
 
 if (typeof window !== 'undefined') {
-  ;(window as Record<string, unknown>).useAuthStore = useAuthStore
+  ;(window as unknown as Record<string, unknown>).useAuthStore = useAuthStore
 }

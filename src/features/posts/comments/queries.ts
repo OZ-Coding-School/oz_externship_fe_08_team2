@@ -1,6 +1,10 @@
-import { useInfiniteQuery } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import api from '@/api/instance'
-import type { CommentsResponse } from './types'
+import type { Comment, CommentsResponse, CommentSubmitRequest } from './types'
 
 const PAGE_SIZE = 10
 
@@ -10,7 +14,7 @@ export function useCommentsInfiniteQuery(postId: number, enabled = true) {
     queryFn: async ({ pageParam }) => {
       const response = await api.get<CommentsResponse>(
         `/api/v1/posts/${postId}/comments`,
-        { params: { page: pageParam, page_size: PAGE_SIZE } },
+        { params: { page: pageParam, page_size: PAGE_SIZE } }
       )
       return response.data
     },
@@ -22,5 +26,22 @@ export function useCommentsInfiniteQuery(postId: number, enabled = true) {
       return nextPage ? Number(nextPage) : undefined
     },
     enabled,
+  })
+}
+
+export function useSubmitComment(postId: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (body: CommentSubmitRequest) => {
+      const response = await api.post<Comment>(
+        `/api/v1/posts/${postId}/comments`,
+        body
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', postId, 'comments'] })
+    },
   })
 }

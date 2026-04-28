@@ -33,10 +33,12 @@ export function CommunityWritePage() {
   // }, [isAuthenticated, navigate])
 
   const {
-    data: categories = [],
+    data: rawCategories = [],
     isError: isCategoriesError,
     isLoading: isCategoriesLoading,
   } = useCategories()
+
+  const categories = rawCategories.filter((c) => c.name !== '전체 게시판')
 
   const { mutate: createPost, isPending } = useCreatePost()
 

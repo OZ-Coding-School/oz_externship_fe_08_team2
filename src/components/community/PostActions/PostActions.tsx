@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/common/Button'
 
+const COPY_FEEDBACK_DURATION = 2000
+
 export interface PostActionsProps {
   likeCount: number
   isLiked: boolean
@@ -25,7 +27,7 @@ export function PostActions({
   const handleShare = async () => {
     await onShare()
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION)
   }
 
   return (

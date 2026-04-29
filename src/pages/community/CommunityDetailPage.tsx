@@ -70,11 +70,11 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastVariant, setToastVariant] = useState<'error' | 'warning'>(
-    'warning'
-  )
-  const [toastVisible, setToastVisible] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    variant: 'error' | 'warning'
+    visible: boolean
+  }>({ message: '', variant: 'warning', visible: false })
 
   const { mutate: toggleLike, isPending: isLikePending } =
     useTogglePostLike(postId)
@@ -84,9 +84,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     message: string,
     variant: 'error' | 'warning' = 'warning'
   ) => {
-    setToastMessage(message)
-    setToastVariant(variant)
-    setToastVisible(true)
+    setToast({ message, variant, visible: true })
   }
 
   const handleEdit = () => {
@@ -100,12 +98,22 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     }
     if (isLikePending) return
 
+    // 낙관적 업데이트: API 응답 전 즉시 UI 반영
+    const prevLiked = isLiked
+    const prevCount = likeCount
+    setIsLiked(!isLiked)
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
+
     toggleLike(isLiked, {
       onSuccess: (data) => {
+        // 서버 응답으로 최종 동기화
         setIsLiked(data.is_liked)
         setLikeCount(data.like_count)
       },
       onError: () => {
+        // 실패 시 이전 상태로 롤백
+        setIsLiked(prevLiked)
+        setLikeCount(prevCount)
         showToast('좋아요 처리에 실패했습니다.', 'error')
       },
     })
@@ -121,10 +129,14 @@ function CommunityDetailContent({ postId }: { postId: number }) {
 
   const handleShare = async () => {
     const url = window.location.href
-    if (navigator.share) {
-      await navigator.share({ url, title: post.title })
-    } else {
-      await navigator.clipboard.writeText(url)
+    try {
+      if (navigator.share) {
+        await navigator.share({ url, title: post.title })
+      } else {
+        await navigator.clipboard.writeText(url)
+      }
+    } catch {
+      showToast('링크 복사에 실패했습니다.', 'error')
     }
   }
 
@@ -187,10 +199,10 @@ function CommunityDetailContent({ postId }: { postId: number }) {
 
       {/* 토스트 메시지 */}
       <Toast
-        message={toastMessage}
-        variant={toastVariant}
-        visible={toastVisible}
-        onClose={() => setToastVisible(false)}
+        message={toast.message}
+        variant={toast.variant}
+        visible={toast.visible}
+        onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
     </main>
   )

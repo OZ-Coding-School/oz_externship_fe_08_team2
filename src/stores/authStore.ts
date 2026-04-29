@@ -28,7 +28,3 @@ export const useAuthStore = create<AuthState>()(
     { name: 'AuthStore' }
   )
 )
-
-if (import.meta.env.DEV) {
-  ;(window as unknown as Record<string, unknown>).authStore = useAuthStore
-}

@@ -93,7 +93,7 @@ function ChevronRightIcon() {
 }
 
 function getPageRange(current: number, total: number): number[] {
-  const WINDOW = 5
+  const WINDOW = 10
   const half = Math.floor(WINDOW / 2)
   let start = Math.max(1, current - half)
   const end = Math.min(total, start + WINDOW - 1)
@@ -106,8 +106,8 @@ export function CommunityListPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const tabsScrollRef = useRef<HTMLDivElement>(null)
 
-  const [searchType, setSearchType] = useState<PostSearchFilter>(
-    SEARCH_TYPE_OPTIONS[0].value
+  const [searchType, setSearchType] = useState<PostSearchFilter | undefined>(
+    undefined
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [category, setCategory] = useState(CATEGORY_TABS[0].value)
@@ -171,14 +171,14 @@ export function CommunityListPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto w-full max-w-5xl px-4 py-10">
       {/* 페이지 타이틀 */}
       <h1 className="text-text-heading text-3xl font-bold tracking-tight">
         커뮤니티
       </h1>
 
       {/* 검색 + 글쓰기 */}
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-6 flex w-full items-center gap-3">
         <span className="w-28 shrink-0">
           <DropdownList
             options={SEARCH_TYPE_OPTIONS}
@@ -205,7 +205,7 @@ export function CommunityListPage() {
       </div>
 
       {/* 카테고리 탭 + 정렬 */}
-      <div className="mt-8 grid grid-cols-[1fr_8rem] items-end gap-4">
+      <div className="mt-8 grid w-full grid-cols-[1fr_8rem] items-center gap-4">
         {/* 탭 스크롤 영역 */}
         <div className="border-border-base flex items-center border-b">
           {/* 왼쪽 화살표 */}
@@ -256,7 +256,7 @@ export function CommunityListPage() {
         </div>
 
         {/* 정렬 */}
-        <div className="pb-2">
+        <div>
           <DropdownList
             options={SORT_OPTIONS}
             value={sort}
@@ -266,7 +266,7 @@ export function CommunityListPage() {
       </div>
 
       {/* 글 목록 */}
-      <div className="min-h-96">
+      <div className="w-full min-h-96">
         {isLoading && (
           <p className="text-text-muted py-16 text-center text-sm">
             불러오는 중...
@@ -297,7 +297,7 @@ export function CommunityListPage() {
 
       {/* 페이지네이션 */}
       {totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-center gap-1">
+        <div className="mt-8 flex w-full items-center justify-center gap-1">
           {page > 1 && (
             <button
               type="button"

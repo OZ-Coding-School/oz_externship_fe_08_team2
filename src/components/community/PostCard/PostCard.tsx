@@ -24,7 +24,16 @@ function formatRelativeTime(isoString: string): string {
 
 function ThumbsUpIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
       <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
     </svg>
@@ -33,7 +42,16 @@ function ThumbsUpIcon() {
 
 function CommentIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   )
@@ -41,7 +59,16 @@ function CommentIcon() {
 
 function EyeIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -56,22 +83,22 @@ export function PostCard({ post, onClick }: PostCardProps) {
       onClick={onClick}
       data-testid="post-card"
       className={[
-        'border-border-base overflow-hidden border-b py-6',
-        onClick ? 'cursor-pointer transition-colors duration-150 hover:bg-gray-100/60' : '',
+        'border-border-base w-full overflow-hidden border-b py-6',
+        onClick
+          ? 'cursor-pointer transition-colors duration-150 hover:bg-gray-100/60'
+          : '',
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      <div className="flex gap-5">
+      <div className="flex w-full gap-5 overflow-hidden">
         {/* 텍스트 영역 */}
-        <div className="flex min-w-0 flex-1 overflow-hidden flex-col gap-1.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
           {/* 카테고리 */}
-          <span className="text-text-muted text-xs">
-            {post.category.name}
-          </span>
+          <span className="text-text-muted text-xs">{post.category.name}</span>
 
           {/* 제목 */}
-          <h2 className="text-text-heading truncate text-base font-semibold leading-snug">
+          <h2 className="text-text-heading truncate text-base leading-snug font-semibold">
             {post.title}
           </h2>
 
@@ -79,16 +106,18 @@ export function PostCard({ post, onClick }: PostCardProps) {
           <p
             className={[
               'text-text-body text-sm leading-relaxed wrap-break-word',
-              hasThumbnail ? 'line-clamp-1' : 'line-clamp-2',
+              hasThumbnail
+                ? 'line-clamp-1 min-h-5.25'
+                : 'line-clamp-2 min-h-10.5',
             ].join(' ')}
           >
             {post.content}
           </p>
 
           {/* 하단 메타 */}
-          <div className="text-text-muted mt-3 flex items-center justify-between text-xs">
+          <div className="text-text-muted mt-3 flex w-full items-center justify-between text-xs">
             {/* 좋아요 · 댓글 · 조회수 */}
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-4">
               <span className="flex items-center gap-1">
                 <ThumbsUpIcon />
                 좋아요 {post.like_count.toLocaleString()}
@@ -104,16 +133,18 @@ export function PostCard({ post, onClick }: PostCardProps) {
             </div>
 
             {/* 작성자 · 시간 */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex min-w-0 shrink-0 items-center gap-1.5">
               <Avatar
                 src={post.author.profile_image}
                 alt={`${post.author.nickname} 프로필`}
                 size="sm"
               />
-              <span className="text-text-body font-medium">
+              <span className="text-text-body max-w-24 truncate font-medium">
                 {post.author.nickname}
               </span>
-              <span aria-hidden="true" className="text-gray-300">·</span>
+              <span aria-hidden="true" className="text-gray-300">
+                ·
+              </span>
               <time dateTime={post.created_at}>
                 {formatRelativeTime(post.created_at)}
               </time>

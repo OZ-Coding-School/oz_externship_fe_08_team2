@@ -44,7 +44,7 @@ export function PostBody({ content }: PostBodyProps) {
   return (
     <div
       className={[
-        'text-text-body min-h-40 py-8 text-base leading-relaxed',
+        'text-text-heading min-h-40 py-10 text-base leading-normal',
         /* 단락 */
         '[&_p]:mb-4',
         /* 제목 */

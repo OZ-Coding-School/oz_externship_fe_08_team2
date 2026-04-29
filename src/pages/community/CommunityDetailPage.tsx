@@ -94,19 +94,18 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     })
   }
 
-  return (
-    <main className="mx-auto w-full max-w-[944px] px-4 py-10">
-      {/* 뒤로가기 */}
-      <button
-        type="button"
-        onClick={() => navigate('/community')}
-        className="text-text-muted hover:text-text-body mb-8 flex items-center gap-1.5 text-sm transition-colors"
-      >
-        <span aria-hidden="true">←</span>
-        커뮤니티 목록
-      </button>
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      await navigator.share({ url, title: post.title })
+    } else {
+      await navigator.clipboard.writeText(url)
+    }
+  }
 
-      <article>
+  return (
+    <main className="mx-auto w-full max-w-[944px] px-4 pt-16 pb-10">
+      <article className="flex flex-col">
         {/* 헤더: 카테고리 · 제목 · 작성자 · 메타 */}
         <PostHeader
           category={post.category_name}
@@ -117,6 +116,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           }}
           createdAt={post.created_at}
           viewCount={post.view_count}
+          likeCount={likeCount}
         />
 
         {/* 수정/삭제 버튼 — 작성자 전용 */}
@@ -127,6 +127,9 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           />
         )}
 
+        {/* 구분선 */}
+        <div className="mt-1 h-px w-full bg-gray-200" />
+
         {/* 본문 (HTML · 이미지 포함) */}
         <PostBody content={post.content} />
 
@@ -136,7 +139,11 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           isLiked={isLiked}
           isLoggedIn={isLoggedIn}
           onLike={handleLike}
+          onShare={handleShare}
         />
+
+        {/* 구분선 */}
+        <div className="h-px w-full bg-gray-200" />
 
         {/* 댓글 */}
         <CommunityCommentsPage postId={post.id} />

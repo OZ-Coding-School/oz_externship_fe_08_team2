@@ -24,3 +24,7 @@ export interface CommentsResponse {
   previous: string | null
   results: Comment[]
 }
+
+export interface CommentSubmitRequest {
+  content: string
+}

@@ -39,17 +39,18 @@
 
 ### Warning (수정 권장)
 
-#### W-1. 서버 상태와 로컬 상태의 이중 관리
+#### W-1. 서버 상태와 로컬 상태의 이중 관리 ✅ 개선 완료
 
 - **파일**: `src/pages/community/CommunityDetailPage.tsx:70-71`
 - **내용**: `isLiked`와 `likeCount`를 `useState`로 로컬 관리하면서 동시에 `useTogglePostLike`의 `onSuccess`에서 `queryClient.invalidateQueries`로 서버 캐시도 갱신하고 있다. Suspense + useSuspenseQuery 환경에서 invalidate가 일어나면 리렌더링 시 서버 데이터와 로컬 상태가 일시적으로 불일치할 수 있다.
 - **수정 제안**: 낙관적 업데이트(optimistic update) 패턴을 `useMutation`의 `onMutate`/`onError`/`onSettled`에서 처리하거나, 로컬 상태를 완전히 제거하고 서버 캐시만 신뢰하는 방향으로 일원화 검토.
+- **적용 내용**: `handleLike`에서 API 호출 전 낙관적 업데이트(즉시 상태 반영) 적용. `onError` 시 이전 상태로 롤백, `onSuccess` 시 서버 응답으로 최종 동기화.
 
-#### W-2. Toast 상태 3개를 개별 useState로 관리
+#### W-2. Toast 상태 3개를 개별 useState로 관리 ✅ 개선 완료
 
 - **파일**: `src/pages/community/CommunityDetailPage.tsx:73-77`
 - **내용**: `toastMessage`, `toastVariant`, `toastVisible` 3개의 state가 항상 함께 변경된다. 상태가 분산되어 있으면 일관성 관리가 어려워지고, 불필요한 리렌더링이 발생할 수 있다.
-- **수정 제안**: 하나의 객체 state로 통합하거나, `useReducer`를 사용하는 것을 권장.
+- **적용 내용**: 단일 객체 state로 통합.
   ```typescript
   const [toast, setToast] = useState<{
     message: string
@@ -58,31 +59,30 @@
   }>({ message: '', variant: 'warning', visible: false })
   ```
 
-#### W-3. handleShare에서 에러 미처리
+#### W-3. handleShare에서 에러 미처리 ✅ 개선 완료
 
 - **파일**: `src/pages/community/CommunityDetailPage.tsx:122-129`
-- **내용**: `navigator.share()`와 `navigator.clipboard.writeText()` 호출 시 에러 핸들링이 없다. 클립보드 API는 HTTPS가 아닌 환경이나 권한 거부 시 실패할 수 있다. 이 부분은 이번 PR 범위 밖(기존 코드)이지만, 좋아요 기능에서 Toast를 도입했으므로 공유 실패 시에도 Toast를 활용할 수 있다.
-- **수정 제안**: try-catch로 감싸고 실패 시 Toast로 사용자에게 알림.
+- **내용**: `navigator.share()`와 `navigator.clipboard.writeText()` 호출 시 에러 핸들링이 없다. 클립보드 API는 HTTPS가 아닌 환경이나 권한 거부 시 실패할 수 있다.
+- **적용 내용**: try-catch로 감싸고 실패 시 Toast로 사용자에게 알림.
 
 ### Suggestion (개선 제안)
 
-#### S-1. MSW 핸들러의 하드코딩된 like_count
+#### S-1. MSW 핸들러의 하드코딩된 like_count ✅ 개선 완료
 
 - **파일**: `src/features/posts/like/handler.ts:11,21`
 - **내용**: POST 시 `like_count: 4`, DELETE 시 `like_count: 3`으로 고정되어 있다. 모킹 환경에서 연속 좋아요/취소 테스트 시 항상 동일한 값만 반환하므로 실제 동작과 차이가 발생한다.
-- **수정 제안**: 클로저로 카운터를 관리하거나, 요청 횟수에 따라 동적으로 값을 변경하는 방식 고려.
+- **적용 내용**: `Map<number, number>`으로 postId별 카운터 동적 관리. 초기값 3(detail 핸들러 기준), 0 미만으로 내려가지 않도록 `Math.max(0, ...)` 처리.
 
 #### S-2. PostActions 컴포넌트의 `isLoggedIn` 체크 중복
 
 - **파일**: `src/components/community/PostActions/PostActions.tsx:38`, `src/pages/community/CommunityDetailPage.tsx:97`
-- **내용**: `PostActions`에서 `disabled={!isLoggedIn || isLikePending}`으로 비회원 클릭을 차단하고, `CommunityDetailPage`의 `handleLike`에서도 `!isAuthenticated` 체크를 한다. 방어적 코드로서 나쁘지 않지만, 두 곳에서 동일한 검증이 중복된다.
-- **수정 제안**: 의도적 방어라면 주석으로 명시하거나, 한쪽으로 일원화.
+- **내용**: `PostActions`에서 `disabled={!isLoggedIn || isLikePending}`으로 비회원 클릭을 차단하고, `CommunityDetailPage`의 `handleLike`에서도 `!isAuthenticated` 체크를 한다. 의도적인 이중 방어로 유지.
 
-#### S-3. 매직 넘버 2000 (공유 복사 피드백 타임아웃)
+#### S-3. 매직 넘버 2000 (공유 복사 피드백 타임아웃) ✅ 개선 완료
 
 - **파일**: `src/components/community/PostActions/PostActions.tsx:28`
-- **내용**: `setTimeout(() => setCopied(false), 2000)`의 2000ms가 매직 넘버이다. (기존 코드이므로 이번 PR 범위 밖)
-- **수정 제안**: `const COPY_FEEDBACK_DURATION = 2000`으로 상수화 권장.
+- **내용**: `setTimeout(() => setCopied(false), 2000)`의 2000ms가 매직 넘버이다.
+- **적용 내용**: `const COPY_FEEDBACK_DURATION = 2000` 상수로 추출.
 
 ---
 

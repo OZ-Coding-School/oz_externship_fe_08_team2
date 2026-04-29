@@ -1,9 +1,9 @@
+import { Button } from '@/components/common/Button'
+
 export interface PostAuthorActionsProps {
   onEdit: () => void
   onDelete: () => void
 }
-
-import { Button } from '@/components/common/Button'
 
 export function PostAuthorActions({
   onEdit,

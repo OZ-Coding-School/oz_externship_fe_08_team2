@@ -111,6 +111,7 @@ export function CommunityEditPage() {
         onCancel={() =>
           navigate(ROUTES.COMMUNITY.DETAIL.replace(':postId', postId!))
         }
+        showCancel={true}
         isPending={isPending}
       />
       <Toast

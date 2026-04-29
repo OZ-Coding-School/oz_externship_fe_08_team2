@@ -28,7 +28,3 @@ export const useAuthStore = create<AuthState>()(
     { name: 'AuthStore' }
   )
 )
-
-if (typeof window !== 'undefined') {
-  ;(window as unknown as Record<string, unknown>).useAuthStore = useAuthStore
-}

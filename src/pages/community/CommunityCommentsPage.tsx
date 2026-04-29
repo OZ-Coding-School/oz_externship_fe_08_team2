@@ -144,6 +144,7 @@ export function CommunityCommentsPage({ postId }: Props) {
             showSubmitToast('댓글 내용을 입력해주세요.')
           } else if (status === 401) {
             showSubmitToast('로그인이 필요합니다.')
+            navigate(ROUTES.AUTH.LOGIN, { replace: true })
           } else if (status === 404) {
             showSubmitToast('존재하지 않는 게시글입니다.')
             navigate(ROUTES.COMMUNITY.LIST, { replace: true })

@@ -5,7 +5,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, className = '' }: PageHeaderProps) {
   return (
-    <h1 className={`text-text-heading text-2xl font-bold ${className}`}>
+    <h1 className={`text-text-heading text-[32px] font-bold ${className}`}>
       {title}
     </h1>
   )

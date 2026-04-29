@@ -17,8 +17,8 @@ function CommentLoadingDots() {
     <>
       <style>{`
         @keyframes comment-wave {
-          0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
-          30% { transform: translateY(-12px); opacity: 1; }
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-12px); }
         }
         .comment-dot {
           animation: comment-wave 1.2s ease-in-out infinite;

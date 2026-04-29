@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import MDEditor, {
   commands as mdCommands,
   type ICommand,
@@ -50,7 +50,8 @@ export interface PostFormProps {
   isCategoriesLoading: boolean
   defaultValues?: Partial<PostFormValues>
   onSubmit: (values: PostFormSubmitValues) => void
-  onCancel: () => void
+  onCancel?: () => void
+  showCancel?: boolean
   isPending: boolean
 }
 
@@ -124,34 +125,6 @@ function safeSelected(
 }
 
 /* ── 정적 커맨드 ── */
-
-const undoCommand: ICommand = {
-  name: 'undo',
-  keyCommand: 'undo',
-  buttonProps: { 'aria-label': '실행 취소', title: '실행 취소' },
-  icon: <Undo2 size={14} />,
-  execute: () => {
-    const el = document.querySelector<HTMLTextAreaElement>(
-      '.w-md-editor-text-input'
-    )
-    el?.focus()
-    document.execCommand('undo')
-  },
-}
-
-const redoCommand: ICommand = {
-  name: 'redo',
-  keyCommand: 'redo',
-  buttonProps: { 'aria-label': '다시 실행', title: '다시 실행' },
-  icon: <Redo2 size={14} />,
-  execute: () => {
-    const el = document.querySelector<HTMLTextAreaElement>(
-      '.w-md-editor-text-input'
-    )
-    el?.focus()
-    document.execCommand('redo')
-  },
-}
 
 const fontFamilyCommand: ICommand = {
   name: 'font-family',
@@ -501,6 +474,7 @@ export function PostForm({
   defaultValues,
   onSubmit,
   onCancel,
+  showCancel = false,
   isPending,
 }: PostFormProps) {
   const [values, setValues] = useState<PostFormValues>(() => ({
@@ -511,7 +485,10 @@ export function PostForm({
   const [errors, setErrors] = useState<PostFormErrors>({})
   const [imageError, setImageError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [undoStack, setUndoStack] = useState<string[]>([])
+  const [redoStack, setRedoStack] = useState<string[]>([])
   const { mutateAsync: getPresignedUrl } = usePresignedUrl()
+  const imageUrlMapRef = useRef<Map<string, string>>(new Map())
 
   const categoryOptions = categories.map((c) => ({
     value: String(c.id),
@@ -522,9 +499,59 @@ export function PostForm({
     key: K,
     value: PostFormValues[K]
   ) => {
+    if (key === 'content') {
+      setUndoStack((prev) => [...prev, values.content])
+      setRedoStack([])
+    }
     setValues((prev) => ({ ...prev, [key]: value }))
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }))
   }
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return
+    const prev = undoStack[undoStack.length - 1]
+    setRedoStack((r) => [...r, values.content])
+    setUndoStack((u) => u.slice(0, -1))
+    setValues((v) => ({ ...v, content: prev }))
+  }, [undoStack, values.content])
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return
+    const next = redoStack[redoStack.length - 1]
+    setUndoStack((u) => [...u, values.content])
+    setRedoStack((r) => r.slice(0, -1))
+    setValues((v) => ({ ...v, content: next }))
+  }, [redoStack, values.content])
+
+  const undoCommand = useMemo<ICommand>(
+    () => ({
+      name: 'undo',
+      keyCommand: 'undo',
+      buttonProps: {
+        'aria-label': '실행 취소',
+        title: '실행 취소',
+        'data-inactive': undoStack.length === 0 ? 'true' : undefined,
+      } as React.ButtonHTMLAttributes<HTMLButtonElement>,
+      icon: <Undo2 size={14} />,
+      execute: handleUndo,
+    }),
+    [undoStack.length, handleUndo]
+  )
+
+  const redoCommand = useMemo<ICommand>(
+    () => ({
+      name: 'redo',
+      keyCommand: 'redo',
+      buttonProps: {
+        'aria-label': '다시 실행',
+        title: '다시 실행',
+        'data-inactive': redoStack.length === 0 ? 'true' : undefined,
+      } as React.ButtonHTMLAttributes<HTMLButtonElement>,
+      icon: <Redo2 size={14} />,
+      execute: handleRedo,
+    }),
+    [redoStack.length, handleRedo]
+  )
 
   const validate = (): boolean => {
     const next: PostFormErrors = {}
@@ -542,9 +569,13 @@ export function PostForm({
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault()
     if (!validate()) return
+    let finalContent = values.content
+    imageUrlMapRef.current.forEach((serverUrl, objectUrl) => {
+      finalContent = finalContent.replaceAll(objectUrl, serverUrl)
+    })
     onSubmit({
       title: values.title,
-      content: values.content,
+      content: finalContent,
       category_id: Number(values.categoryId),
     })
   }
@@ -575,6 +606,7 @@ export function PostForm({
           }
           setImageError(null)
           setIsUploading(true)
+          const objectUrl = URL.createObjectURL(file)
           try {
             const { presigned_url, img_url } = await getPresignedUrl({
               file_name: file.name,
@@ -584,8 +616,10 @@ export function PostForm({
               body: file,
               headers: { 'Content-Type': file.type },
             })
-            api.replaceSelection(`![${file.name}](${img_url})`)
+            imageUrlMapRef.current.set(objectUrl, img_url)
+            api.replaceSelection(`![${file.name}](${objectUrl})`)
           } catch {
+            URL.revokeObjectURL(objectUrl)
             setImageError('이미지 업로드에 실패했습니다. 다시 시도해 주세요.')
           } finally {
             setIsUploading(false)
@@ -610,14 +644,13 @@ export function PostForm({
       mdCommands.italic,
       underlineCommand,
       mdCommands.strikethrough,
-      mdCommands.divider,
       bgColorCommand,
       textColorCommand,
       mdCommands.divider,
       mdCommands.link,
       imageCommand,
     ],
-    [imageCommand]
+    [imageCommand, undoCommand, redoCommand]
   )
 
   /* 툴바 Row 2 */
@@ -629,12 +662,9 @@ export function PostForm({
       alignCenterCommand,
       alignRightCommand,
       alignJustifyCommand,
-      mdCommands.divider,
       lineHeightCmd,
-      mdCommands.divider,
       outdentCmd,
       indentCmd,
-      mdCommands.divider,
       clearFormatCmd,
     ],
     []
@@ -643,7 +673,7 @@ export function PostForm({
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       {/* 카테고리 + 제목 카드 (라벨 없음) */}
-      <div className="border-border-base bg-bg-base flex flex-col gap-3 rounded-2xl border p-6">
+      <div className="bg-bg-base flex flex-col gap-3 rounded-[20px] border border-[#cdcdcd] p-6">
         <Dropdown
           options={categoryOptions}
           value={values.categoryId}
@@ -664,8 +694,8 @@ export function PostForm({
 
         <div
           className={[
-            'flex items-center rounded-lg border-0 px-4',
-            'bg-primary-50',
+            'flex items-center rounded border-0 px-4',
+            'bg-[#f7f1ff]',
             errors.title ? 'ring-1 ring-red-400' : '',
           ]
             .filter(Boolean)
@@ -688,7 +718,7 @@ export function PostForm({
       </div>
 
       {/* 에디터 카드 */}
-      <div className="border-border-base bg-bg-base flex flex-col gap-2 rounded-2xl border p-4">
+      <div className="bg-bg-base rounded-[20px] border border-[#cdcdcd]">
         <div data-color-mode="light" className="post-editor-wrap">
           <MDEditor
             value={values.content}
@@ -699,17 +729,17 @@ export function PostForm({
           />
         </div>
         {isUploading && (
-          <p className="text-text-muted text-xs" aria-live="polite">
+          <p className="text-text-muted px-4 pb-2 text-xs" aria-live="polite">
             이미지 업로드 중...
           </p>
         )}
         {imageError && (
-          <p className="text-error text-xs" role="alert">
+          <p className="text-error px-4 pb-2 text-xs" role="alert">
             {imageError}
           </p>
         )}
         {errors.content && (
-          <p className="text-error text-xs" role="alert">
+          <p className="text-error px-4 pb-2 text-xs" role="alert">
             {errors.content}
           </p>
         )}
@@ -717,7 +747,7 @@ export function PostForm({
 
       {/* 버튼 영역 */}
       <div className="flex justify-end gap-3">
-        <CancelButton onClick={onCancel} />
+        {showCancel && onCancel && <CancelButton onClick={onCancel} />}
         <SubmitButton
           label={mode === 'write' ? '등록하기' : '수정하기'}
           loading={isPending}

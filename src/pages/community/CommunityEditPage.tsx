@@ -1,10 +1,9 @@
 /**
  * @figma 커뮤니티 - 게시글 수정하기  https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5757&m=dev
  */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import type { AxiosError } from 'axios'
-import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/constants/routes'
 import { useCategories } from '@/features/posts/categories'
 import { usePostDetail } from '@/features/posts/detail'
@@ -24,18 +23,17 @@ interface ToastState {
 export function CommunityEditPage() {
   const navigate = useNavigate()
   const { postId } = useParams<{ postId: string }>()
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
     variant: 'success',
   })
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
+  //   }
+  // }, [isAuthenticated, navigate])
 
   const {
     data: categories = [],
@@ -43,19 +41,15 @@ export function CommunityEditPage() {
     isLoading: isCategoriesLoading,
   } = useCategories()
 
-  const {
-    data: post,
-    isLoading: isPostLoading,
-    isError: isPostError,
-  } = usePostDetail(postId!)
+  const { data: post, isLoading: isPostLoading } = usePostDetail(postId!)
 
   const { mutate: updatePost, isPending } = useUpdatePost(postId!)
 
-  useEffect(() => {
-    if (isPostError) {
-      navigate(ROUTES.COMMUNITY.LIST, { replace: true })
-    }
-  }, [isPostError, navigate])
+  // useEffect(() => {
+  //   if (isPostError) {
+  //     navigate(ROUTES.COMMUNITY.LIST, { replace: true })
+  //   }
+  // }, [isPostError, navigate])
 
   const handleSubmit = (values: PostFormSubmitValues) => {
     updatePost(values, {

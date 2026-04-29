@@ -1,9 +1,7 @@
 import { http, HttpResponse, delay } from 'msw'
 import type { CommentsResponse } from './types'
 
-const TOTAL = 25
-
-const mockComments = Array.from({ length: TOTAL }, (_, i) => ({
+const seedComments = Array.from({ length: 25 }, (_, i) => ({
   id: i + 1,
   author: {
     id: (i % 5) + 1,
@@ -18,6 +16,9 @@ const mockComments = Array.from({ length: TOTAL }, (_, i) => ({
   created_at: new Date(Date.now() - i * 60_000).toISOString(),
   updated_at: new Date(Date.now() - i * 60_000).toISOString(),
 }))
+
+// 런타임에 추가된 댓글을 누적하는 배열 (최신순: 앞에 추가)
+const mockComments = [...seedComments]
 
 export const commentsHandlers = [
   http.post('/api/v1/posts/:postId/comments', async ({ params, request }) => {
@@ -37,6 +38,7 @@ export const commentsHandlers = [
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
+    mockComments.unshift(newComment)
     return HttpResponse.json(newComment, { status: 201 })
   }),
 
@@ -55,13 +57,14 @@ export const commentsHandlers = [
     const page = Number(url.searchParams.get('page') ?? 1)
     const pageSize = Number(url.searchParams.get('page_size') ?? 10)
 
+    const total = mockComments.length
     const start = (page - 1) * pageSize
     const end = start + pageSize
     const results = mockComments.slice(start, end)
-    const hasNext = end < TOTAL
+    const hasNext = end < total
 
     const response: CommentsResponse = {
-      count: TOTAL,
+      count: total,
       next: hasNext
         ? `http://localhost:5173/api/v1/posts/${postId}/comments?page=${page + 1}&page_size=${pageSize}`
         : null,

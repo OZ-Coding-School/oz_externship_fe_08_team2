@@ -1,48 +1,78 @@
-const MAX_LENGTH = 500
+import { useState } from 'react'
+import { Toast } from '@/components'
 
-export interface CommentInputProps {
+interface CommentInputProps {
   value: string
   onChange: (value: string) => void
-  /** 엔터키 제출 시 호출 (commentSubmit 브랜치에서 연결) */
-  onSubmit?: () => void
+  onSubmit: () => void
+  isSubmitting: boolean
+  submitError: boolean
+  onSubmitErrorClose: () => void
 }
 
-export function CommentInput({ value, onChange, onSubmit }: CommentInputProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (e.target.value.length <= MAX_LENGTH) {
-      onChange(e.target.value)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      onSubmit?.()
-    }
-  }
-
-  const isNearLimit = value.length >= MAX_LENGTH * 0.9
+export function CommentInput({
+  value,
+  onChange,
+  onSubmit,
+  isSubmitting,
+  submitError,
+  onSubmitErrorClose,
+}: CommentInputProps) {
+  const [isFocused, setIsFocused] = useState(false)
 
   return (
-    <div className="flex flex-col gap-1">
-      <textarea
-        value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder="댓글을 입력하세요... (Shift+Enter로 줄바꿈)"
-        rows={3}
-        maxLength={MAX_LENGTH}
-        aria-label="댓글 입력"
-        className="border-border-base bg-bg-base text-text-heading placeholder:text-text-muted focus:border-primary w-full resize-none rounded-sm border px-4 py-3 text-sm transition-colors duration-150 outline-none"
+    <div className="mb-4">
+      <Toast
+        message="댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요."
+        variant="error"
+        visible={submitError}
+        onClose={onSubmitErrorClose}
       />
-      <p
-        className={[
-          'text-right text-xs',
-          isNearLimit ? 'text-error' : 'text-text-muted',
-        ].join(' ')}
+      <div
+        className="relative rounded-lg border transition-colors duration-150"
+        style={{ borderColor: isFocused ? '#6201E0' : '#CECECE' }}
       >
-        {value.length}/{MAX_LENGTH}
-      </p>
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder="개인정보를 공유 및 요청하거나, 명예 훼손, 무단 광고, 불법 정보 유포 시 모니터링 후 삭제될 수 있습니다."
+          rows={2}
+          maxLength={500}
+          disabled={isSubmitting}
+          className="bg-bg-base text-text-heading w-full resize-none rounded-lg px-4 py-3 pb-10 text-sm outline-none disabled:opacity-50"
+          style={{ '--placeholder-color': '#CECECE' } as React.CSSProperties}
+        />
+        <style>{`textarea::placeholder { color: #CECECE; }`}</style>
+        <div className="absolute right-3 bottom-2">
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="rounded-full border text-sm font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+            style={
+              isFocused || value.trim()
+                ? {
+                    width: '80px',
+                    height: '40px',
+                    borderColor: '#6201E0',
+                    backgroundColor: '#EFE6FC',
+                    color: '#6201E0',
+                  }
+                : {
+                    width: '80px',
+                    height: '40px',
+                    borderColor: '#CECECE',
+                    backgroundColor: '#ECECEC',
+                    color: '#4D4D4D',
+                  }
+            }
+          >
+            {isSubmitting ? '등록 중...' : '등록'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

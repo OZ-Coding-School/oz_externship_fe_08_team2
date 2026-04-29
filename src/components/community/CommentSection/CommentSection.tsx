@@ -30,7 +30,10 @@ export function CommentSection({ commentCount }: CommentSectionProps) {
           <CommentInput
             value={inputValue}
             onChange={setInputValue}
-            // onSubmit은 feature/commentSubmit 브랜치에서 연결
+            onSubmit={() => {}}
+            isSubmitting={false}
+            submitError={false}
+            onSubmitErrorClose={() => {}}
           />
         </div>
       )}

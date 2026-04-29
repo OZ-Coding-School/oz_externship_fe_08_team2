@@ -11,6 +11,7 @@ import { PostHeader } from '@/components/community/PostHeader'
 import { PostAuthorActions } from '@/components/community/PostAuthorActions'
 import { PostBody } from '@/components/community/PostBody'
 import { PostActions } from '@/components/community/PostActions'
+import { Toast } from '@/components/common/Toast'
 import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 import { usePostDetail } from '@/features/posts/detail'
 import { useTogglePostLike } from '@/features/posts/like'
@@ -69,19 +70,51 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    variant: 'error' | 'warning'
+    visible: boolean
+  }>({ message: '', variant: 'warning', visible: false })
 
-  const { mutate: toggleLike } = useTogglePostLike(postId)
+  const { mutate: toggleLike, isPending: isLikePending } =
+    useTogglePostLike(postId)
   const { mutate: deletePost } = useDeletePost()
+
+  const showToast = (
+    message: string,
+    variant: 'error' | 'warning' = 'warning'
+  ) => {
+    setToast({ message, variant, visible: true })
+  }
 
   const handleEdit = () => {
     navigate(`/community/${postId}/edit`)
   }
 
   const handleLike = () => {
+    if (!isAuthenticated) {
+      showToast('로그인이 필요합니다.', 'warning')
+      return
+    }
+    if (isLikePending) return
+
+    // 낙관적 업데이트: API 응답 전 즉시 UI 반영
+    const prevLiked = isLiked
+    const prevCount = likeCount
+    setIsLiked(!isLiked)
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
+
     toggleLike(isLiked, {
       onSuccess: (data) => {
+        // 서버 응답으로 최종 동기화
         setIsLiked(data.is_liked)
         setLikeCount(data.like_count)
+      },
+      onError: () => {
+        // 실패 시 이전 상태로 롤백
+        setIsLiked(prevLiked)
+        setLikeCount(prevCount)
+        showToast('좋아요 처리에 실패했습니다.', 'error')
       },
     })
   }
@@ -96,10 +129,15 @@ function CommunityDetailContent({ postId }: { postId: number }) {
 
   const handleShare = async () => {
     const url = window.location.href
-    if (navigator.share) {
-      await navigator.share({ url, title: post.title })
-    } else {
-      await navigator.clipboard.writeText(url)
+    try {
+      if (navigator.share) {
+        await navigator.share({ url, title: post.title })
+      } else {
+        await navigator.clipboard.writeText(url)
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
+      showToast('링크 복사에 실패했습니다.', 'error')
     }
   }
 
@@ -138,6 +176,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           likeCount={likeCount}
           isLiked={isLiked}
           isLoggedIn={isLoggedIn}
+          isLikePending={isLikePending}
           onLike={handleLike}
           onShare={handleShare}
         />
@@ -157,6 +196,14 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         confirmLabel="삭제"
         danger
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* 토스트 메시지 */}
+      <Toast
+        message={toast.message}
+        variant={toast.variant}
+        visible={toast.visible}
+        onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
     </main>
   )

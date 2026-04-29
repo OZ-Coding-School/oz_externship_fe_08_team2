@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Button } from '@/components/common/Button'
 
+const COPY_FEEDBACK_DURATION = 2000
+
 export interface PostActionsProps {
   likeCount: number
   isLiked: boolean
   /** false이면 좋아요 버튼 비활성화 (비회원) */
   isLoggedIn: boolean
-  // TODO(좋아요): posts/like — POST /api/v1/posts/{post_id}/like 연동
+  /** true이면 좋아요 요청 중 (중복 클릭 방지) */
+  isLikePending?: boolean
   onLike: () => void
   onShare: () => Promise<void>
 }
@@ -15,6 +18,7 @@ export function PostActions({
   likeCount,
   isLiked,
   isLoggedIn,
+  isLikePending = false,
   onLike,
   onShare,
 }: PostActionsProps) {
@@ -23,7 +27,7 @@ export function PostActions({
   const handleShare = async () => {
     await onShare()
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION)
   }
 
   return (
@@ -33,7 +37,7 @@ export function PostActions({
         variant="ghost"
         type="button"
         onClick={onLike}
-        disabled={!isLoggedIn}
+        disabled={!isLoggedIn || isLikePending}
         aria-label={isLiked ? '좋아요 취소' : '좋아요'}
         aria-pressed={isLiked}
         className={[

@@ -135,7 +135,8 @@ function CommunityDetailContent({ postId }: { postId: number }) {
       } else {
         await navigator.clipboard.writeText(url)
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
       showToast('링크 복사에 실패했습니다.', 'error')
     }
   }

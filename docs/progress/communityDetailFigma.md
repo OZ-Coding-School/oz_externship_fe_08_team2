@@ -17,13 +17,14 @@
 
 ## 변경 파일 목록
 
-| 파일                                                               | 변경 내용                                                                    | 상태    |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ------- |
-| `src/pages/community/CommunityDetailPage.tsx`                      | `pt-16` 상단 여백, 구분선 추가, 레이아웃 조정                                | ✅ 완료 |
-| `src/components/community/PostHeader/PostHeader.tsx`               | 카테고리 `text-xl font-bold`, 제목 `text-[32px]`, Avatar `lg`, 메타 레이아웃 | ✅ 완료 |
-| `src/components/community/PostAuthorActions/PostAuthorActions.tsx` | 수정(`text-primary`) / 삭제(`text-gray-500`) 텍스트 버튼, 세로 구분선        | ✅ 완료 |
-| `src/components/community/PostBody/PostBody.tsx`                   | 본문 색상 `text-text-heading`, 상하 여백 `py-10`                             | ✅ 완료 |
-| `src/components/community/PostActions/PostActions.tsx`             | 좋아요 pill shape, 공유하기 버튼(링크 복사) 추가                             | ✅ 완료 |
+| 파일                                                               | 변경 내용                                                                                              | 상태    |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ------- |
+| `src/pages/community/CommunityDetailPage.tsx`                      | `pt-16` 상단 여백, 구분선 추가, 레이아웃 조정, 구분선 색상 조정                                        | ✅ 완료 |
+| `src/components/community/PostHeader/PostHeader.tsx`               | 카테고리 `text-xl font-bold`, 제목 `text-[32px]`, Avatar `lg`, 메타 레이아웃, 좋아요 수·상대 시간 추가 | ✅ 완료 |
+| `src/components/community/PostAuthorActions/PostAuthorActions.tsx` | 수정(`text-primary`) / 삭제(`text-gray-500`) 텍스트 버튼, 세로 구분선                                  | ✅ 완료 |
+| `src/components/community/PostBody/PostBody.tsx`                   | 본문 색상 `text-text-heading`, 상하 여백 `py-10`                                                       | ✅ 완료 |
+| `src/components/community/PostActions/PostActions.tsx`             | 좋아요 pill shape, 공유하기 버튼(링크 복사) 추가                                                       | ✅ 완료 |
+| `src/components/common/Avatar/Avatar.tsx`                          | 이미지 로드 실패 시 이니셜 fallback (`onError` 처리)                                                   | ✅ 완료 |
 
 ---
 
@@ -34,7 +35,10 @@
 - 카테고리 뱃지: `text-primary text-xl font-bold` — Figma 주요 색상·크기 반영
 - 제목: `text-[32px] leading-snug font-bold` — 정확한 픽셀값으로 지정
 - 프로필 영역: `Avatar size="lg"` + 닉네임 `text-base font-semibold text-gray-600`
-- 메타(조회수·날짜): `flex gap-1 text-base text-gray-400` + `·` 구분자
+- 메타 정보: `조회수 n · 좋아요 n · n시간 전` 형식으로 변경
+  - 좋아요 수(`likeCount`) prop 추가 — 좋아요 클릭 시 실시간 반영
+  - 상대 시간 표시: `방금 전 / n분 전 / n시간 전 / n일 전` (`formatRelativeTime` 헬퍼)
+  - 기존 ISO 날짜 문자열 그대로 전달, 렌더링 시 변환
 
 ### PostAuthorActions
 
@@ -59,8 +63,14 @@
 ### CommunityDetailPage
 
 - 최상단 컨테이너 `pt-16` 상단 여백 추가
-- 헤더 하단, 본문 하단에 `<hr />` 구분선 삽입
+- 헤더 하단, 본문 하단에 구분선 삽입 — `bg-gray-200` (옅은 회색)
 - 작성자 본인일 때만 `PostAuthorActions` 렌더링 (기존 `isAuthor` 로직 유지)
+- `PostHeader`에 `likeCount` 전달 (좋아요 클릭 시 메타 정보 즉시 반영)
+
+### Avatar (공통 컴포넌트)
+
+- 이미지 URL이 있어도 로드 실패 시 이니셜 fallback 표시
+- `useState(false)`로 에러 상태 관리, `onError={() => setImgError(true)}`
 
 ---
 
@@ -71,11 +81,13 @@
 - [x] 카테고리 텍스트 스타일 (`text-primary text-xl font-bold`)
 - [x] 제목 32px, 굵게
 - [x] Avatar 크기 `lg`
-- [x] 조회수·날짜 메타 정보 레이아웃
+- [x] 메타 정보: `조회수 n · 좋아요 n · n시간 전` 형식
+- [x] 상대 시간 표시 (`방금 전 / n분 전 / n시간 전 / n일 전`)
 - [x] 수정/삭제 텍스트 버튼 + 세로 구분선
 - [x] 본문 영역 색상 및 여백
 - [x] 좋아요 pill shape, 상태별 색상 토글
-- [x] 페이지 상단 여백 및 구분선
+- [x] 페이지 상단 여백 및 구분선 (`bg-gray-200`)
+- [x] 프로필 이미지 로드 실패 시 이니셜 fallback
 
 ### 공유하기 기능
 
@@ -108,3 +120,5 @@ CommunityDetailPage
 | `style: 공유하기 버튼 Figma 디자인 반영 (#34)`                                          | PostActions pill shape, 링크 아이콘 반영                                 |
 | `refactor: reorder share and like buttons in PostActions component`                     | 좋아요→공유하기 버튼 순서 조정                                           |
 | `refactor: PostAuthorActions와 PostActions에서 기본 버튼을 공통 Button 컴포넌트로 교체` | variant="ghost" 공통 컴포넌트 적용                                       |
+| `style: 게시글 상세 페이지 메타 정보 UI 개선 (#34)`                                     | 메타 정보 형식 변경, 상대 시간, Avatar 이미지 fallback                   |
+| `style: 구분선 색상 조정 (#34)`                                                         | `bg-gray-200`으로 조정                                                   |

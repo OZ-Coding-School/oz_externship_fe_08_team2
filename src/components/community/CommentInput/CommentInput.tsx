@@ -7,6 +7,7 @@ interface CommentInputProps {
   onSubmit: () => void
   isSubmitting: boolean
   submitError: boolean
+  submitErrorMessage?: string
   onSubmitErrorClose: () => void
 }
 
@@ -16,6 +17,7 @@ export function CommentInput({
   onSubmit,
   isSubmitting,
   submitError,
+  submitErrorMessage = '댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.',
   onSubmitErrorClose,
 }: CommentInputProps) {
   const [isFocused, setIsFocused] = useState(false)
@@ -23,7 +25,7 @@ export function CommentInput({
   return (
     <div className="mb-4">
       <Toast
-        message="댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요."
+        message={submitErrorMessage}
         variant="error"
         visible={submitError}
         onClose={onSubmitErrorClose}

@@ -26,6 +26,7 @@ export function CommunityCommentsPage({ postId }: Props) {
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = useState('')
   const [submitError, setSubmitError] = useState(false)
+  const [submitErrorMessage, setSubmitErrorMessage] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
 
   const {
@@ -54,10 +55,24 @@ export function CommunityCommentsPage({ postId }: Props) {
       { content: inputValue.trim() },
       {
         onSuccess: () => setInputValue(''),
-        onError: () => setSubmitError(true),
+        onError: (error) => {
+          const status = axios.isAxiosError(error)
+            ? error.response?.status
+            : null
+          if (status === 401) {
+            setSubmitErrorMessage('로그인이 필요합니다.')
+            setSubmitError(true)
+            navigate(ROUTES.AUTH.LOGIN, { replace: true })
+          } else {
+            setSubmitErrorMessage(
+              '댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.'
+            )
+            setSubmitError(true)
+          }
+        },
       }
     )
-  }, [inputValue, submitComment])
+  }, [inputValue, submitComment, navigate])
 
   // 무한스크롤 IntersectionObserver
   useEffect(() => {
@@ -106,6 +121,7 @@ export function CommunityCommentsPage({ postId }: Props) {
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           submitError={submitError}
+          submitErrorMessage={submitErrorMessage}
           onSubmitErrorClose={() => setSubmitError(false)}
         />
       )}

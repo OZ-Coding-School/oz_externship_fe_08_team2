@@ -128,7 +128,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         )}
 
         {/* 구분선 */}
-        <div className="mt-1 h-px w-full bg-gray-100" />
+        <div className="mt-1 h-px w-full bg-gray-200" />
 
         {/* 본문 (HTML · 이미지 포함) */}
         <PostBody content={post.content} />
@@ -143,7 +143,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         />
 
         {/* 구분선 */}
-        <div className="h-px w-full bg-gray-100" />
+        <div className="h-px w-full bg-gray-200" />
 
         {/* 댓글 */}
         <CommunityCommentsPage postId={post.id} />

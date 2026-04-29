@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify'
 import { Avatar } from '@/components'
 import type { Comment, TaggedUser } from '@/features/posts/comments'
 
@@ -13,17 +14,18 @@ function parseContent(
   content: string,
   taggedUsers: TaggedUser[]
 ): React.ReactNode[] {
+  const clean = DOMPurify.sanitize(content)
   const mentionRegex = /@(\S+)/g
   const parts: React.ReactNode[] = []
   let lastIndex = 0
   let match: RegExpExecArray | null
 
-  while ((match = mentionRegex.exec(content)) !== null) {
+  while ((match = mentionRegex.exec(clean)) !== null) {
     const nickname = match[1]
     const isTagged = taggedUsers.some((u) => u.nickname === nickname)
 
     if (match.index > lastIndex) {
-      parts.push(content.slice(lastIndex, match.index))
+      parts.push(clean.slice(lastIndex, match.index))
     }
 
     parts.push(
@@ -38,8 +40,8 @@ function parseContent(
     lastIndex = match.index + match[0].length
   }
 
-  if (lastIndex < content.length) {
-    parts.push(content.slice(lastIndex))
+  if (lastIndex < clean.length) {
+    parts.push(clean.slice(lastIndex))
   }
 
   return parts

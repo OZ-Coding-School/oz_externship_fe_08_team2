@@ -130,3 +130,4 @@
 | `feat: PostForm 실행 취소/다시 실행 커스텀 히스토리 스택 구현 및 버그 수정` | undo/redo 스택, 이미지 업로드 수정, 드롭다운·모서리 버그 수정 |
 | `style: PageHeader 제목 폰트 크기 Figma 기준 32px 적용`                     | text-2xl → text-[32px]                                        |
 | `feat: 게시글 수정 페이지 취소 버튼 조건부 표시 적용`                       | showCancel={true} 추가                                        |
+| `style: 커뮤니티 수정 페이지 및 관련 모듈 코드 포맷팅 정리`                 | CommunityEditPage 미사용 import/변수 제거, 후행 쉼표 정리     |

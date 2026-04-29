@@ -116,6 +116,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           }}
           createdAt={post.created_at}
           viewCount={post.view_count}
+          likeCount={likeCount}
         />
 
         {/* 수정/삭제 버튼 — 작성자 전용 */}
@@ -127,7 +128,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         )}
 
         {/* 구분선 */}
-        <div className="mt-1 h-px w-full bg-gray-300" />
+        <div className="mt-1 h-px w-full bg-gray-100" />
 
         {/* 본문 (HTML · 이미지 포함) */}
         <PostBody content={post.content} />
@@ -142,7 +143,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         />
 
         {/* 구분선 */}
-        <div className="h-px w-full bg-gray-300" />
+        <div className="h-px w-full bg-gray-100" />
 
         {/* 댓글 */}
         <CommunityCommentsPage postId={post.id} />

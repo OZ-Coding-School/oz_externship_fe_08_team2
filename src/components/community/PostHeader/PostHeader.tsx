@@ -9,6 +9,20 @@ export interface PostHeaderProps {
   }
   createdAt: string
   viewCount: number
+  likeCount: number
+}
+
+function formatRelativeTime(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime()
+  const sec = Math.floor(diff / 1000)
+  const min = Math.floor(sec / 60)
+  const hour = Math.floor(min / 60)
+  const day = Math.floor(hour / 24)
+
+  if (sec < 60) return '방금 전'
+  if (min < 60) return `${min}분 전`
+  if (hour < 24) return `${hour}시간 전`
+  return `${day}일 전`
 }
 
 export function PostHeader({
@@ -17,6 +31,7 @@ export function PostHeader({
   author,
   createdAt,
   viewCount,
+  likeCount,
 }: PostHeaderProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -40,10 +55,10 @@ export function PostHeader({
       {/* 조회수 · 좋아요 · 시간 메타 정보 */}
       <div className="flex items-center gap-1 text-base text-gray-400">
         <span>조회수 {viewCount.toLocaleString()}</span>
-        <span className="text-disable" aria-hidden="true">
-          ·
-        </span>
-        <span>{createdAt}</span>
+        <span aria-hidden="true">·</span>
+        <span>좋아요 {likeCount.toLocaleString()}</span>
+        <span aria-hidden="true">·</span>
+        <span>{formatRelativeTime(createdAt)}</span>
       </div>
     </div>
   )

@@ -41,7 +41,7 @@ export function CommunityEditPage() {
     isLoading: isCategoriesLoading,
   } = useCategories()
 
-  const { data: post, isLoading: isPostLoading } = usePostDetail(postId!)
+  const { data: post, isLoading: isPostLoading } = usePostDetail(Number(postId))
 
   const { mutate: updatePost, isPending } = useUpdatePost(postId!)
 
@@ -95,7 +95,7 @@ export function CommunityEditPage() {
         defaultValues={
           post
             ? {
-                categoryId: String(post.category.id),
+                categoryId: String(post.category_id),
                 title: post.title,
                 content: post.content,
               }

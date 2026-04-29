@@ -11,6 +11,7 @@ import { PostHeader } from '@/components/community/PostHeader'
 import { PostAuthorActions } from '@/components/community/PostAuthorActions'
 import { PostBody } from '@/components/community/PostBody'
 import { PostActions } from '@/components/community/PostActions'
+import { Toast } from '@/components/common/Toast'
 import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
 import { usePostDetail } from '@/features/posts/detail'
 import { useTogglePostLike } from '@/features/posts/like'
@@ -69,19 +70,43 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastVariant, setToastVariant] = useState<'error' | 'warning'>(
+    'warning'
+  )
+  const [toastVisible, setToastVisible] = useState(false)
 
-  const { mutate: toggleLike } = useTogglePostLike(postId)
+  const { mutate: toggleLike, isPending: isLikePending } =
+    useTogglePostLike(postId)
   const { mutate: deletePost } = useDeletePost()
+
+  const showToast = (
+    message: string,
+    variant: 'error' | 'warning' = 'warning'
+  ) => {
+    setToastMessage(message)
+    setToastVariant(variant)
+    setToastVisible(true)
+  }
 
   const handleEdit = () => {
     navigate(`/community/${postId}/edit`)
   }
 
   const handleLike = () => {
+    if (!isAuthenticated) {
+      showToast('로그인이 필요합니다.', 'warning')
+      return
+    }
+    if (isLikePending) return
+
     toggleLike(isLiked, {
       onSuccess: (data) => {
         setIsLiked(data.is_liked)
         setLikeCount(data.like_count)
+      },
+      onError: () => {
+        showToast('좋아요 처리에 실패했습니다.', 'error')
       },
     })
   }
@@ -138,6 +163,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           likeCount={likeCount}
           isLiked={isLiked}
           isLoggedIn={isLoggedIn}
+          isLikePending={isLikePending}
           onLike={handleLike}
           onShare={handleShare}
         />
@@ -157,6 +183,14 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         confirmLabel="삭제"
         danger
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* 토스트 메시지 */}
+      <Toast
+        message={toastMessage}
+        variant={toastVariant}
+        visible={toastVisible}
+        onClose={() => setToastVisible(false)}
       />
     </main>
   )

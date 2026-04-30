@@ -10,6 +10,8 @@ export interface ConfirmModalProps {
   onConfirm?: () => void
   /** 확인 버튼 위험 스타일 적용 */
   danger?: boolean
+  /** 요청 중 확인 버튼 비활성화 (중복 클릭 방지) */
+  isConfirmDisabled?: boolean
 }
 
 /** Figma 1:3271 — 본문 + 취소/확인 pill 버튼 */
@@ -22,6 +24,7 @@ export function ConfirmModal({
   onCancel,
   onConfirm,
   danger = false,
+  isConfirmDisabled = false,
 }: ConfirmModalProps) {
   const handleCancel = () => {
     onCancel?.()
@@ -50,7 +53,8 @@ export function ConfirmModal({
           </button>
           <button
             onClick={handleConfirm}
-            className={`h-[42px] rounded-full px-6 text-base font-semibold tracking-tight text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${danger ? 'bg-error hover:bg-error-dark focus-visible:ring-error' : 'bg-primary hover:bg-primary-700 focus-visible:ring-primary'}`}
+            disabled={isConfirmDisabled}
+            className={`h-[42px] rounded-full px-6 text-base font-semibold tracking-tight text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${danger ? 'bg-error hover:bg-error-dark focus-visible:ring-error' : 'bg-primary hover:bg-primary-700 focus-visible:ring-primary'}`}
           >
             {confirmLabel}
           </button>

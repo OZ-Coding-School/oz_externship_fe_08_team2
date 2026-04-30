@@ -123,6 +123,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     if (isDeletePending) return
     deletePost(postId, {
       onSuccess: () => {
+        setIsDeleteModalOpen(false) // 모달 즉시 닫기
         showToast('게시글이 삭제되었습니다.', 'success')
         setTimeout(() => navigate('/community'), 1500)
       },

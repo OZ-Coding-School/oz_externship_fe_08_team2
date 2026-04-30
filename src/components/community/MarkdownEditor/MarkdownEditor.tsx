@@ -18,7 +18,7 @@ import {
   IndentIncrease,
   IndentDecrease,
 } from 'lucide-react'
-import '../PostForm/PostForm.css'
+import './MarkdownEditor.css'
 
 export interface MarkdownEditorProps {
   value: string

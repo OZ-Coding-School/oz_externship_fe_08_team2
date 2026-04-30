@@ -33,3 +33,24 @@ settings.local.json
 playwright-report/
 test-results/
 superpowers/
+
+# Claude Code local settings (may contain API tokens)
+.claude/settings.local.json
+
+# Figma MCP token
+.figma
+figma.config.*
+.figmarc
+
+# Private keys & certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Service account / credentials files
+service-account*.json
+*credentials*.json
+*secret*.json

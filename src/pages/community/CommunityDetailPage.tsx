@@ -64,7 +64,6 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   const { data: post } = usePostDetail(postId)
   const { isAuthenticated, user } = useAuthStore()
 
-  const isLoggedIn = isAuthenticated
   const isAuthor = isAuthenticated && user?.nickname === post.author.nickname
 
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
@@ -183,7 +182,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         <PostActions
           likeCount={likeCount}
           isLiked={isLiked}
-          isLoggedIn={isLoggedIn}
+          isLoggedIn={isAuthenticated}
           isLikePending={isLikePending}
           onLike={handleLike}
           onShare={handleShare}

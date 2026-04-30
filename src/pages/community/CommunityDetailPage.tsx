@@ -72,17 +72,17 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [toast, setToast] = useState<{
     message: string
-    variant: 'error' | 'warning'
+    variant: 'success' | 'error' | 'warning'
     visible: boolean
   }>({ message: '', variant: 'warning', visible: false })
 
   const { mutate: toggleLike, isPending: isLikePending } =
     useTogglePostLike(postId)
-  const { mutate: deletePost } = useDeletePost()
+  const { mutate: deletePost, isPending: isDeletePending } = useDeletePost()
 
   const showToast = (
     message: string,
-    variant: 'error' | 'warning' = 'warning'
+    variant: 'success' | 'error' | 'warning' = 'warning'
   ) => {
     setToast({ message, variant, visible: true })
   }
@@ -120,9 +120,15 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   }
 
   const handleDeleteConfirm = () => {
+    if (isDeletePending) return
     deletePost(postId, {
       onSuccess: () => {
-        navigate('/community')
+        setIsDeleteModalOpen(false) // 모달 즉시 닫기
+        showToast('게시글이 삭제되었습니다.', 'success')
+        setTimeout(() => navigate('/community'), 1500)
+      },
+      onError: () => {
+        showToast('게시글 삭제에 실패했습니다.', 'error')
       },
     })
   }
@@ -161,7 +167,9 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         {isAuthor && (
           <PostAuthorActions
             onEdit={handleEdit}
-            onDelete={() => setIsDeleteModalOpen(true)}
+            onDelete={() => {
+              if (!isDeletePending) setIsDeleteModalOpen(true)
+            }}
           />
         )}
 
@@ -195,6 +203,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         message={`게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.`}
         confirmLabel="삭제"
         danger
+        isConfirmDisabled={isDeletePending}
         onConfirm={handleDeleteConfirm}
       />
 

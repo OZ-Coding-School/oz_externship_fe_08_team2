@@ -192,10 +192,7 @@ export const postListHandlers = [
 
     const response: PostListResponse = {
       count,
-      next:
-        start + pageSize < count
-          ? `/api/v1/posts/?page=${page + 1}`
-          : null,
+      next: start + pageSize < count ? `/api/v1/posts/?page=${page + 1}` : null,
       previous: page > 1 ? `/api/v1/posts/?page=${page - 1}` : null,
       results,
     }

@@ -266,7 +266,7 @@ export function CommunityListPage() {
       </div>
 
       {/* 글 목록 */}
-      <div className="w-full min-h-96">
+      <div className="min-h-96 w-full">
         {isLoading && (
           <p className="text-text-muted py-16 text-center text-sm">
             불러오는 중...

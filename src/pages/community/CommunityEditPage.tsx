@@ -92,7 +92,7 @@ export function CommunityEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-236 px-4 py-8">
+    <div className="mx-auto w-full max-w-236 px-4 py-8">
       <PageHeader title="커뮤니티 게시글 수정" className="mb-8" />
       <PostForm
         mode="edit"
@@ -110,10 +110,6 @@ export function CommunityEditPage() {
             : undefined
         }
         onSubmit={handleSubmit}
-        onCancel={() =>
-          navigate(ROUTES.COMMUNITY.DETAIL.replace(':postId', postId!))
-        }
-        showCancel={true}
         isPending={isPending}
       />
       <Toast

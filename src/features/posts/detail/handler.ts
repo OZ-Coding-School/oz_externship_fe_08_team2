@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import type { PostDetailResponse } from './types'
 
 const dummyPostDetail: PostDetailResponse = {
@@ -21,7 +21,8 @@ const dummyPostDetail: PostDetailResponse = {
 }
 
 export const postDetailHandlers = [
-  http.get('/api/v1/posts/:post_id', ({ params }) => {
+  http.get('/api/v1/posts/:post_id', async ({ params }) => {
+    await delay(300)
     const postId = Number(params.post_id)
     return HttpResponse.json({ ...dummyPostDetail, id: postId })
   }),

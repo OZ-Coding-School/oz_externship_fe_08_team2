@@ -101,7 +101,6 @@
 
 ```tsx
 import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
-
 ;<CommunityCommentsPage postId={postId} />
 ```
 

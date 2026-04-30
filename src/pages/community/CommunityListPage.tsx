@@ -298,16 +298,15 @@ export function CommunityListPage() {
       {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className="mt-8 flex w-full items-center justify-center gap-1">
-          {page > 1 && (
-            <button
-              type="button"
-              onClick={() => setPage(1)}
-              aria-label="첫 페이지"
-              className="text-text-muted flex h-8 w-8 items-center justify-center rounded text-sm transition-colors hover:bg-gray-200"
-            >
-              «
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+            aria-label="첫 페이지"
+            className="text-text-muted flex h-8 w-8 items-center justify-center rounded text-sm transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            «
+          </button>
           <button
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}

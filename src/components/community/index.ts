@@ -1,4 +1,5 @@
 export * from './PageHeader'
+export * from './PostCard'
 export * from './CategorySelect'
 export * from './TitleInput'
 export * from './ContentTextarea'

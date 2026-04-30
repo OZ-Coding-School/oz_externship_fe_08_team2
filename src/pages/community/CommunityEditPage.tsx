@@ -1,12 +1,14 @@
 /**
  * @figma 커뮤니티 - 게시글 수정하기  https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5757&m=dev
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { ROUTES } from '@/constants/routes'
+import { useAuthStore } from '@/stores/authStore'
 import { useCategories } from '@/features/posts/categories'
-import { usePostDetail } from '@/features/posts/detail'
+import { postDetailQueryOptions } from '@/features/posts/detail'
 import { useUpdatePost } from '@/features/posts/edit'
 import { Toast } from '@/components/common/Toast'
 import type { ToastVariant } from '@/components/common/Toast/Toast'
@@ -29,11 +31,13 @@ export function CommunityEditPage() {
     variant: 'success',
   })
 
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
-  //   }
-  // }, [isAuthenticated, navigate])
+  const { isAuthenticated } = useAuthStore()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const {
     data: categories = [],
@@ -41,15 +45,19 @@ export function CommunityEditPage() {
     isLoading: isCategoriesLoading,
   } = useCategories()
 
-  const { data: post, isLoading: isPostLoading } = usePostDetail(Number(postId))
+  const {
+    data: post,
+    isLoading: isPostLoading,
+    isError: isPostError,
+  } = useQuery(postDetailQueryOptions(Number(postId)))
 
   const { mutate: updatePost, isPending } = useUpdatePost(postId!)
 
-  // useEffect(() => {
-  //   if (isPostError) {
-  //     navigate(ROUTES.COMMUNITY.LIST, { replace: true })
-  //   }
-  // }, [isPostError, navigate])
+  useEffect(() => {
+    if (isPostError) {
+      navigate(ROUTES.COMMUNITY.LIST, { replace: true })
+    }
+  }, [isPostError, navigate])
 
   const handleSubmit = (values: PostFormSubmitValues) => {
     updatePost(values, {
@@ -84,8 +92,8 @@ export function CommunityEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <PageHeader title="게시글 수정" className="mb-8" />
+    <div className="mx-auto max-w-236 px-4 py-8">
+      <PageHeader title="커뮤니티 게시글 수정" className="mb-8" />
       <PostForm
         mode="edit"
         categories={categories}

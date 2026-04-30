@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { ROUTES } from '@/constants/routes'
-// import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useCategories } from '@/features/posts/categories'
 import { postDetailQueryOptions } from '@/features/posts/detail'
 import { useUpdatePost } from '@/features/posts/edit'
@@ -31,13 +31,13 @@ export function CommunityEditPage() {
     variant: 'success',
   })
 
-  // const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
 
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
-  //   }
-  // }, [isAuthenticated, navigate])
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const {
     data: categories = [],

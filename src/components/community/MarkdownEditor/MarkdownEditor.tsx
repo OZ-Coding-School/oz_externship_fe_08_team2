@@ -109,6 +109,7 @@ const fontFamilyCommand: ICommand = {
           key={value}
           type="button"
           style={{ fontFamily: value === 'inherit' ? undefined : value }}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             const inner = safeSelected(getState)
             textApi?.replaceSelection(
@@ -141,6 +142,7 @@ const fontSizeCommand: ICommand = {
         <button
           key={size}
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             const inner = safeSelected(getState)
             textApi?.replaceSelection(
@@ -200,24 +202,83 @@ function makeColorCommand(
   }
 }
 
-const bgColorCommand = makeColorCommand(
-  'bg-color',
-  '배경색',
-  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-    <span
-      style={{
-        width: 16,
-        height: 16,
-        borderRadius: 3,
-        background: '#4285f4',
-        border: '1px solid rgba(0,0,0,0.12)',
-        display: 'inline-block',
-      }}
-    />
-    <ChevronDown size={10} />
-  </span>,
-  (color, text) => `<mark style="background-color: ${color}">${text}</mark>`
-)
+const BG_PALETTE_COLORS = ['#ffffff', ...PALETTE_COLORS]
+
+const bgColorCommand: ICommand = {
+  name: 'bg-color',
+  keyCommand: 'group',
+  groupName: 'bg-color',
+  buttonProps: { 'aria-label': '배경색', title: '배경색' },
+  icon: (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+      <span
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: 3,
+          background: '#4285f4',
+          border: '1px solid rgba(0,0,0,0.12)',
+          display: 'inline-block',
+        }}
+      />
+      <ChevronDown size={10} />
+    </span>
+  ),
+  children: ({ close, getState, textApi }) => (
+    <div style={{ padding: 7 }}>
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          const selected = safeSelected(getState)
+          textApi?.replaceSelection(
+            selected.replace(/<mark[^>]*>([\s\S]*?)<\/mark>/g, '$1')
+          )
+          close()
+        }}
+        style={{
+          display: 'block',
+          width: '100%',
+          textAlign: 'center',
+          padding: '4px 8px',
+          marginBottom: 6,
+          fontSize: 12,
+          cursor: 'pointer',
+          border: '1px solid #e2e8f0',
+          borderRadius: 4,
+          background: 'transparent',
+          color: '#374151',
+        }}
+      >
+        배경색 제거
+      </button>
+      <div className="color-palette" style={{ padding: 0 }}>
+        {BG_PALETTE_COLORS.map((color) => (
+          <div
+            key={color}
+            className="color-swatch"
+            style={{
+              background: color,
+              border:
+                color === '#ffffff'
+                  ? '1px solid #d1d5db'
+                  : '1px solid rgba(0,0,0,0.12)',
+            }}
+            title={color}
+            onClick={() => {
+              const selected = safeSelected(getState)
+              textApi?.replaceSelection(
+                `<mark style="background-color: ${color}">${selected}</mark>`
+              )
+              close()
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  ),
+  execute: () => {},
+}
 
 const textColorCommand = makeColorCommand(
   'text-color',
@@ -304,6 +365,7 @@ const listDropdownCmd: ICommand = {
     <div className="toolbar-popup">
       <button
         type="button"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           const text = safeSelected(getState)
           const lines = text
@@ -320,6 +382,7 @@ const listDropdownCmd: ICommand = {
       </button>
       <button
         type="button"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           const text = safeSelected(getState)
           const lines = text
@@ -336,6 +399,7 @@ const listDropdownCmd: ICommand = {
       </button>
       <button
         type="button"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           const text = safeSelected(getState)
           const lines = text
@@ -367,6 +431,7 @@ const lineHeightCmd: ICommand = {
         <button
           key={h}
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             const text = safeSelected(getState)
             textApi?.replaceSelection(
@@ -421,6 +486,7 @@ const clearFormatCmd: ICommand = {
   buttonProps: { 'aria-label': '서식 제거', title: '서식 제거' },
   icon: <RemoveFormatting size={14} />,
   execute: (state, api) => {
+    if (!state.selectedText) return
     const cleaned = state.selectedText
       .replace(/\*\*(.*?)\*\*/gs, '$1')
       .replace(/\*(.*?)\*/gs, '$1')

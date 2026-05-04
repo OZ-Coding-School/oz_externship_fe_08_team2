@@ -32,6 +32,15 @@ function parseContent(content: string, taggedUsers: TaggedUser[]): ReactNode[] {
       <span
         key={match.index}
         className={isTagged ? 'text-primary font-bold' : ''}
+        style={
+          isTagged
+            ? {
+                backgroundColor: '#EDE6FF',
+                borderRadius: '4px',
+                padding: '0 2px',
+              }
+            : undefined
+        }
       >
         {match[0]}
       </span>

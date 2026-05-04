@@ -51,15 +51,9 @@ interface CommentItemProps {
   comment: Comment
   isOwn: boolean
   onDelete?: () => void
-  isDeleting?: boolean
 }
 
-export function CommentItem({
-  comment,
-  isOwn,
-  onDelete,
-  isDeleting = false,
-}: CommentItemProps) {
+export function CommentItem({ comment, isOwn, onDelete }: CommentItemProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
@@ -82,11 +76,10 @@ export function CommentItem({
               <span className="text-text-muted text-xs">|</span>
               <button
                 type="button"
-                disabled={isDeleting}
                 onClick={() => setConfirmOpen(true)}
-                className="text-primary text-sm font-semibold transition-colors duration-150 hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+                className="text-primary text-sm font-semibold transition-colors duration-150 hover:opacity-70"
               >
-                {isDeleting ? '삭제 중...' : '삭제'}
+                삭제
               </button>
               <ConfirmModal
                 isOpen={confirmOpen}

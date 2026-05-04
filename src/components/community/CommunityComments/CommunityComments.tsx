@@ -30,9 +30,6 @@ export function CommunityComments({ postId }: Props) {
   const [submitError, setSubmitError] = useState(false)
   const [submitErrorMessage, setSubmitErrorMessage] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
-  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
-    null
-  )
   const [deleteToast, setDeleteToast] = useState<{
     visible: boolean
     message: string
@@ -89,11 +86,8 @@ export function CommunityComments({ postId }: Props) {
 
   const handleDelete = useCallback(
     (commentId: number) => {
-      if (deletingCommentId !== null) return
-      setDeletingCommentId(commentId)
       deleteComment(commentId, {
         onSuccess: () => {
-          setDeletingCommentId(null)
           setDeleteToast({
             visible: true,
             message: '댓글이 삭제되었습니다.',
@@ -101,7 +95,6 @@ export function CommunityComments({ postId }: Props) {
           })
         },
         onError: (error) => {
-          setDeletingCommentId(null)
           if (!axios.isAxiosError(error)) {
             setDeleteToast({
               visible: true,
@@ -143,7 +136,7 @@ export function CommunityComments({ postId }: Props) {
         },
       })
     },
-    [deletingCommentId, deleteComment, navigate]
+    [deleteComment, navigate]
   )
 
   // 무한스크롤 IntersectionObserver
@@ -240,7 +233,6 @@ export function CommunityComments({ postId }: Props) {
               comment={comment}
               isOwn={comment.author.nickname === user?.nickname}
               onDelete={() => handleDelete(comment.id)}
-              isDeleting={deletingCommentId === comment.id}
             />
           ))}
         </div>

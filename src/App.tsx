@@ -17,6 +17,7 @@ function AuthInitializer() {
       .get('/api/v1/accounts/me/', { headers })
       .then(({ data }) => {
         login({
+          id: data.id,
           nickname: data.nickname,
           email: data.email,
           profileImage: data.profile_img_url ?? null,

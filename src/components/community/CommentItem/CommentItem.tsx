@@ -50,9 +50,16 @@ function parseContent(
 interface CommentItemProps {
   comment: Comment
   isOwn: boolean
+  onDelete?: () => void
+  isDeleting?: boolean
 }
 
-export function CommentItem({ comment, isOwn }: CommentItemProps) {
+export function CommentItem({
+  comment,
+  isOwn,
+  onDelete,
+  isDeleting = false,
+}: CommentItemProps) {
   return (
     <div className="flex gap-3 py-4">
       <Avatar
@@ -72,9 +79,11 @@ export function CommentItem({ comment, isOwn }: CommentItemProps) {
                 {' | '}
                 <button
                   type="button"
-                  className="transition-colors duration-150 hover:text-red-500"
+                  disabled={isDeleting}
+                  onClick={onDelete}
+                  className="transition-colors duration-150 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  삭제
+                  {isDeleting ? '삭제 중...' : '삭제'}
                 </button>
               </>
             )}

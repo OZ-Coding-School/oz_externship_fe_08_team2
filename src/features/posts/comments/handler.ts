@@ -42,6 +42,28 @@ export const commentsHandlers = [
     return HttpResponse.json(newComment, { status: 201 })
   }),
 
+  http.delete(
+    '/api/v1/posts/:postId/comments/:commentId',
+    async ({ params }) => {
+      const { postId, commentId } = params
+      if (postId === '999') {
+        return HttpResponse.json(
+          { error_detail: '해당 게시글을 찾을 수 없습니다.' },
+          { status: 404 }
+        )
+      }
+      const idx = mockComments.findIndex((c) => c.id === Number(commentId))
+      if (idx === -1) {
+        return HttpResponse.json(
+          { error_detail: '해당 댓글을 찾을 수 없습니다.' },
+          { status: 404 }
+        )
+      }
+      mockComments.splice(idx, 1)
+      return HttpResponse.json({ detail: '댓글이 삭제되었습니다.' })
+    }
+  ),
+
   http.get('/api/v1/posts/:postId/comments', async ({ params, request }) => {
     await delay(1000)
     const { postId } = params

@@ -6,6 +6,7 @@ import { Toast } from '@/components'
 import {
   useCommentsInfiniteQuery,
   useSubmitComment,
+  useDeleteComment,
 } from '@/features/posts/comments'
 import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/constants/routes'
@@ -28,6 +29,14 @@ export function CommunityCommentsPage({ postId }: Props) {
   const [submitError, setSubmitError] = useState(false)
   const [submitErrorMessage, setSubmitErrorMessage] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
+    null
+  )
+  const [deleteToast, setDeleteToast] = useState<{
+    visible: boolean
+    message: string
+    variant: 'success' | 'error'
+  }>({ visible: false, message: '', variant: 'success' })
 
   const {
     data,
@@ -41,6 +50,7 @@ export function CommunityCommentsPage({ postId }: Props) {
 
   const { mutate: submitComment, isPending: isSubmitting } =
     useSubmitComment(postId)
+  const { mutate: deleteComment } = useDeleteComment(postId)
 
   const isPostNotFound =
     isError && axios.isAxiosError(error) && error.response?.status === 404
@@ -73,6 +83,63 @@ export function CommunityCommentsPage({ postId }: Props) {
       }
     )
   }, [inputValue, submitComment, navigate])
+
+  const handleDelete = useCallback(
+    (commentId: number) => {
+      if (deletingCommentId !== null) return
+      setDeletingCommentId(commentId)
+      deleteComment(commentId, {
+        onSuccess: () => {
+          setDeletingCommentId(null)
+          setDeleteToast({
+            visible: true,
+            message: '댓글이 삭제되었습니다.',
+            variant: 'success',
+          })
+        },
+        onError: (error) => {
+          setDeletingCommentId(null)
+          if (!axios.isAxiosError(error)) {
+            setDeleteToast({
+              visible: true,
+              message: '잠시 후 다시 시도해주세요.',
+              variant: 'error',
+            })
+            return
+          }
+          const status = error.response?.status
+          const detail = error.response?.data?.error_detail ?? ''
+          if (status === 401) {
+            setDeleteToast({
+              visible: true,
+              message: '로그인이 필요합니다.',
+              variant: 'error',
+            })
+            navigate(ROUTES.AUTH.LOGIN, { replace: true })
+          } else if (status === 404 && detail.includes('게시글')) {
+            setDeleteToast({
+              visible: true,
+              message: '해당 게시물은 없습니다.',
+              variant: 'error',
+            })
+          } else if (status === 404 && detail.includes('댓글')) {
+            setDeleteToast({
+              visible: true,
+              message: '이미 삭제된 댓글입니다.',
+              variant: 'error',
+            })
+          } else {
+            setDeleteToast({
+              visible: true,
+              message: '요청에 실패했습니다.',
+              variant: 'error',
+            })
+          }
+        },
+      })
+    },
+    [deletingCommentId, deleteComment, navigate]
+  )
 
   // 무한스크롤 IntersectionObserver
   useEffect(() => {
@@ -113,6 +180,22 @@ export function CommunityCommentsPage({ postId }: Props) {
         onClose={handleToastClose}
       />
 
+      {/* 댓글 삭제 토스트 */}
+      <Toast
+        message={deleteToast.message}
+        variant={deleteToast.variant}
+        visible={deleteToast.visible}
+        onClose={() => {
+          setDeleteToast((prev) => ({ ...prev, visible: false }))
+          if (
+            deleteToast.variant === 'error' &&
+            deleteToast.message === '해당 게시물은 없습니다.'
+          ) {
+            navigate(ROUTES.COMMUNITY.LIST, { replace: true })
+          }
+        }}
+      />
+
       {/* 댓글 입력창 — 로그인 사용자만 */}
       {isAuthenticated && (
         <CommentInput
@@ -147,6 +230,8 @@ export function CommunityCommentsPage({ postId }: Props) {
               key={comment.id}
               comment={comment}
               isOwn={comment.author.nickname === user?.nickname}
+              onDelete={() => handleDelete(comment.id)}
+              isDeleting={deletingCommentId === comment.id}
             />
           ))}
         </div>

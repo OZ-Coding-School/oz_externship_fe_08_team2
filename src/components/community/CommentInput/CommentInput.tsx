@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, type ReactNode } from 'react'
 import { Toast } from '@/components'
 import { useUserSearch } from '@/features/accounts/user-search'
 import { UserTagList } from '@/components/community/UserTagList'
@@ -19,6 +19,44 @@ function getMentionQuery(text: string, cursorPos: number): string | null {
   return match ? match[1] : null
 }
 
+function renderHighlighted(text: string): ReactNode[] {
+  const parts = text.split(/(@\S+)/g)
+  return parts.map((part, i) => {
+    if (/^@\S+$/.test(part)) {
+      return (
+        <mark
+          key={i}
+          style={{
+            backgroundColor: '#DDDDDD',
+            fontWeight: 700,
+            borderRadius: '3px',
+            color: 'inherit',
+          }}
+        >
+          {part}
+        </mark>
+      )
+    }
+    // 개행 처리
+    return part.split('\n').reduce<ReactNode[]>((acc, line, j) => {
+      if (j > 0) acc.push(<br key={`br-${i}-${j}`} />)
+      acc.push(line)
+      return acc
+    }, [])
+  })
+}
+
+// textarea와 동일한 패딩/폰트를 미러 div에 적용하기 위한 공통 스타일
+const SHARED_STYLE: React.CSSProperties = {
+  fontFamily: 'inherit',
+  fontSize: '14px',
+  lineHeight: '1.5',
+  padding: '12px 16px 40px 16px', // py-3 px-4 pb-10
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+  whiteSpace: 'pre-wrap',
+}
+
 export function CommentInput({
   value,
   onChange,
@@ -31,8 +69,15 @@ export function CommentInput({
   const [isFocused, setIsFocused] = useState(false)
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const mirrorRef = useRef<HTMLDivElement>(null)
 
   const { data: searchData } = useUserSearch(mentionQuery ?? '')
+
+  const syncScroll = useCallback(() => {
+    if (mirrorRef.current && textareaRef.current) {
+      mirrorRef.current.scrollTop = textareaRef.current.scrollTop
+    }
+  }, [])
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -40,8 +85,9 @@ export function CommentInput({
       onChange(newValue)
       const cursor = e.target.selectionStart ?? newValue.length
       setMentionQuery(getMentionQuery(newValue, cursor))
+      syncScroll()
     },
-    [onChange]
+    [onChange, syncScroll]
   )
 
   const handleKeyUp = useCallback(
@@ -61,13 +107,11 @@ export function CommentInput({
       const cursor = textareaRef.current?.selectionStart ?? value.length
       const before = value.slice(0, cursor)
       const after = value.slice(cursor)
-      // @query 부분을 @nickname 으로 교체
       const replaced = before.replace(/@(\S*)$/, `@${nickname} `)
       const newValue = replaced + after
       onChange(newValue)
       setMentionQuery(null)
 
-      // 커서를 삽입된 닉네임 뒤로 이동
       requestAnimationFrame(() => {
         if (textareaRef.current) {
           textareaRef.current.focus()
@@ -97,11 +141,25 @@ export function CommentInput({
         {showDropdown && (
           <UserTagList users={users} onSelect={handleSelectUser} />
         )}
+
+        {/* 하이라이트 미러 — textarea 뒤에 겹쳐서 @태그만 강조 표시 */}
+        <div
+          ref={mirrorRef}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg"
+          style={SHARED_STYLE}
+        >
+          {renderHighlighted(value)}
+          {/* 스크롤 여백 확보를 위한 더미 */}
+          {'\u200b'}
+        </div>
+
         <textarea
           ref={textareaRef}
           value={value}
           onChange={handleChange}
           onKeyUp={handleKeyUp}
+          onScroll={syncScroll}
           onFocus={() => setIsFocused(true)}
           onBlur={() => {
             setIsFocused(false)
@@ -111,10 +169,19 @@ export function CommentInput({
           rows={2}
           maxLength={500}
           disabled={isSubmitting}
-          className="bg-bg-base text-text-heading w-full resize-none rounded-lg px-4 py-3 pb-10 text-sm outline-none disabled:opacity-50"
-          style={{ '--placeholder-color': '#CECECE' } as React.CSSProperties}
+          className="relative w-full resize-none rounded-lg pb-10 text-sm outline-none disabled:opacity-50"
+          style={{
+            ...SHARED_STYLE,
+            whiteSpace: 'pre-wrap',
+            background: 'transparent',
+            color: 'transparent',
+            caretColor: '#121212',
+            position: 'relative',
+            zIndex: 1,
+          }}
         />
         <style>{`textarea::placeholder { color: #CECECE; }`}</style>
+
         <div className="absolute right-3 bottom-2">
           <button
             type="button"

@@ -12,7 +12,7 @@ import { PostAuthorActions } from '@/components/community/PostAuthorActions'
 import { PostBody } from '@/components/community/PostBody'
 import { PostActions } from '@/components/community/PostActions'
 import { Toast } from '@/components/common/Toast'
-import { CommunityCommentsPage } from '@/pages/community/CommunityCommentsPage'
+import { CommunityComments } from '@/components/community/CommunityComments'
 import { usePostDetail } from '@/features/posts/detail'
 import { useTogglePostLike } from '@/features/posts/like'
 import { useDeletePost } from '@/features/posts/delete'
@@ -192,7 +192,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
         <div className="h-px w-full bg-gray-200" />
 
         {/* 댓글 */}
-        <CommunityCommentsPage postId={post.id} />
+        <CommunityComments postId={post.id} />
       </article>
 
       {/* 게시글 삭제 확인 모달 */}

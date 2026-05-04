@@ -21,7 +21,7 @@ interface Props {
   postId: number
 }
 
-export function CommunityCommentsPage({ postId }: Props) {
+export function CommunityComments({ postId }: Props) {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
@@ -113,7 +113,6 @@ export function CommunityCommentsPage({ postId }: Props) {
           const status = error.response?.status
           const detail = error.response?.data?.error_detail ?? ''
           if (status === 401) {
-            // 인증 만료 → 토스트 후 로그인 이동
             setDeleteToast({
               visible: true,
               message: '로그인이 필요합니다.',
@@ -121,7 +120,6 @@ export function CommunityCommentsPage({ postId }: Props) {
               closeAction: 'navigate-login',
             })
           } else if (status === 404 && detail.includes('게시글')) {
-            // 게시물 없음 → 토스트 후 목록 이동
             setDeleteToast({
               visible: true,
               message: '해당 게시물은 없습니다.',
@@ -129,7 +127,6 @@ export function CommunityCommentsPage({ postId }: Props) {
               closeAction: 'navigate-list',
             })
           } else if (status === 404 && detail.includes('댓글')) {
-            // 댓글 없음 → 토스트 후 새로고침
             setDeleteToast({
               visible: true,
               message: '이미 삭제된 댓글입니다.',
@@ -137,7 +134,6 @@ export function CommunityCommentsPage({ postId }: Props) {
               closeAction: 'refresh',
             })
           } else {
-            // 500 등 서버 오류 → 토스트만, 폼 유지
             setDeleteToast({
               visible: true,
               message: '잠시 후 다시 시도해주세요.',

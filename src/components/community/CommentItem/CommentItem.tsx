@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import DOMPurify from 'dompurify'
 import { Avatar } from '@/components'
 import { ConfirmModal } from '@/components/common/Modal/ConfirmModal'
@@ -12,13 +13,10 @@ function formatDate(isoString: string): string {
   }).format(new Date(isoString))
 }
 
-function parseContent(
-  content: string,
-  taggedUsers: TaggedUser[]
-): React.ReactNode[] {
+function parseContent(content: string, taggedUsers: TaggedUser[]): ReactNode[] {
   const clean = DOMPurify.sanitize(content)
   const mentionRegex = /@(\S+)/g
-  const parts: React.ReactNode[] = []
+  const parts: ReactNode[] = []
   let lastIndex = 0
   let match: RegExpExecArray | null
 

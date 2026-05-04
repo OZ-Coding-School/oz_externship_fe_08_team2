@@ -182,7 +182,7 @@ export function CommentInput({
         />
         <style>{`textarea::placeholder { color: #CECECE; }`}</style>
 
-        <div className="absolute right-3 bottom-2">
+        <div className="absolute right-3 bottom-2" style={{ zIndex: 2 }}>
           <button
             type="button"
             onClick={onSubmit}

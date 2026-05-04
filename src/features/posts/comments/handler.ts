@@ -1,6 +1,22 @@
 import { http, HttpResponse, delay } from 'msw'
 import type { CommentsResponse } from './types'
 
+// user-search 핸들러의 목 유저 목록과 동일하게 유지
+const MOCK_USERS = [
+  { id: 1, nickname: '오즈원' },
+  { id: 2, nickname: '오즈투' },
+  { id: 3, nickname: '오즈쓰리3' },
+  { id: 4, nickname: '오늘밥은' },
+  { id: 5, nickname: 'user1' },
+  { id: 6, nickname: 'user2' },
+  { id: 7, nickname: '테스트유저' },
+]
+
+function extractTaggedUsers(content: string) {
+  const mentions = [...content.matchAll(/@(\S+)/g)].map((m) => m[1])
+  return MOCK_USERS.filter((u) => mentions.includes(u.nickname))
+}
+
 const seedComments = Array.from({ length: 25 }, (_, i) => {
   // 짝수 인덱스는 테스트유저(id:99) 댓글로 시드 → 삭제 버튼 테스트용
   const isTestUser = i % 4 === 0
@@ -39,7 +55,7 @@ export const commentsHandlers = [
     const newComment = {
       id: Date.now(),
       author: { id: 99, nickname: '테스트유저', profile_img_url: null },
-      tagged_users: [],
+      tagged_users: extractTaggedUsers(body.content),
       content: body.content,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

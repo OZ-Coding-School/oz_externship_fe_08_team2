@@ -19,24 +19,30 @@ function getMentionQuery(text: string, cursorPos: number): string | null {
   return match ? match[1] : null
 }
 
-function renderHighlighted(text: string): ReactNode[] {
+function renderHighlighted(
+  text: string,
+  taggedNicknames: Set<string>
+): ReactNode[] {
   const parts = text.split(/(@\S+)/g)
   return parts.map((part, i) => {
     if (/^@\S+$/.test(part)) {
-      return (
-        <mark
-          key={i}
-          style={{
-            backgroundColor: '#EDE6FF',
-            color: '#6201E0',
-            fontWeight: 700,
-            borderRadius: '4px',
-            padding: '0 2px',
-          }}
-        >
-          {part}
-        </mark>
-      )
+      const nickname = part.slice(1)
+      if (taggedNicknames.has(nickname)) {
+        return (
+          <mark
+            key={i}
+            style={{
+              backgroundColor: '#EDE6FF',
+              color: '#6201E0',
+              fontWeight: 700,
+              borderRadius: '4px',
+              padding: '0 2px',
+            }}
+          >
+            {part}
+          </mark>
+        )
+      }
     }
     // 개행 처리
     return part.split('\n').reduce<ReactNode[]>((acc, line, j) => {
@@ -69,6 +75,7 @@ export function CommentInput({
 }: CommentInputProps) {
   const [isFocused, setIsFocused] = useState(false)
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+  const [taggedNicknames, setTaggedNicknames] = useState<Set<string>>(new Set())
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mirrorRef = useRef<HTMLDivElement>(null)
 
@@ -86,6 +93,14 @@ export function CommentInput({
       onChange(newValue)
       const cursor = e.target.selectionStart ?? newValue.length
       setMentionQuery(getMentionQuery(newValue, cursor))
+      // 텍스트에서 사라진 태그는 하이라이트 목록에서 제거
+      setTaggedNicknames((prev) => {
+        const next = new Set(prev)
+        for (const nick of prev) {
+          if (!newValue.includes(`@${nick}`)) next.delete(nick)
+        }
+        return next
+      })
       syncScroll()
     },
     [onChange, syncScroll]
@@ -112,6 +127,7 @@ export function CommentInput({
       const newValue = replaced + after
       onChange(newValue)
       setMentionQuery(null)
+      setTaggedNicknames((prev) => new Set([...prev, nickname]))
 
       requestAnimationFrame(() => {
         if (textareaRef.current) {
@@ -150,7 +166,7 @@ export function CommentInput({
           className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg"
           style={SHARED_STYLE}
         >
-          {renderHighlighted(value)}
+          {renderHighlighted(value, taggedNicknames)}
           {/* 스크롤 여백 확보를 위한 더미 */}
           {'\u200b'}
         </div>

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { MessageCircle } from 'lucide-react'
 import { Toast } from '@/components'
 import {
   useCommentsInfiniteQuery,
   useSubmitComment,
+  useDeleteComment,
 } from '@/features/posts/comments'
 import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/constants/routes'
@@ -19,7 +21,7 @@ interface Props {
   postId: number
 }
 
-export function CommunityCommentsPage({ postId }: Props) {
+export function CommunityComments({ postId }: Props) {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
@@ -28,6 +30,12 @@ export function CommunityCommentsPage({ postId }: Props) {
   const [submitError, setSubmitError] = useState(false)
   const [submitErrorMessage, setSubmitErrorMessage] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
+  const [deleteToast, setDeleteToast] = useState<{
+    visible: boolean
+    message: string
+    variant: 'success' | 'error'
+    closeAction?: 'navigate-list' | 'navigate-login' | 'refresh'
+  }>({ visible: false, message: '', variant: 'success' })
 
   const {
     data,
@@ -39,8 +47,10 @@ export function CommunityCommentsPage({ postId }: Props) {
     error,
   } = useCommentsInfiniteQuery(postId, Boolean(postId))
 
+  const queryClient = useQueryClient()
   const { mutate: submitComment, isPending: isSubmitting } =
     useSubmitComment(postId)
+  const { mutate: deleteComment } = useDeleteComment(postId)
 
   const isPostNotFound =
     isError && axios.isAxiosError(error) && error.response?.status === 404
@@ -73,6 +83,61 @@ export function CommunityCommentsPage({ postId }: Props) {
       }
     )
   }, [inputValue, submitComment, navigate])
+
+  const handleDelete = useCallback(
+    (commentId: number) => {
+      deleteComment(commentId, {
+        onSuccess: () => {
+          setDeleteToast({
+            visible: true,
+            message: '댓글이 삭제되었습니다.',
+            variant: 'success',
+          })
+        },
+        onError: (error) => {
+          if (!axios.isAxiosError(error)) {
+            setDeleteToast({
+              visible: true,
+              message: '잠시 후 다시 시도해주세요.',
+              variant: 'error',
+            })
+            return
+          }
+          const status = error.response?.status
+          const detail = error.response?.data?.error_detail ?? ''
+          if (status === 401) {
+            setDeleteToast({
+              visible: true,
+              message: '로그인이 필요합니다.',
+              variant: 'error',
+              closeAction: 'navigate-login',
+            })
+          } else if (status === 404 && detail.includes('게시글')) {
+            setDeleteToast({
+              visible: true,
+              message: '해당 게시물은 없습니다.',
+              variant: 'error',
+              closeAction: 'navigate-list',
+            })
+          } else if (status === 404 && detail.includes('댓글')) {
+            setDeleteToast({
+              visible: true,
+              message: '이미 삭제된 댓글입니다.',
+              variant: 'error',
+              closeAction: 'refresh',
+            })
+          } else {
+            setDeleteToast({
+              visible: true,
+              message: '잠시 후 다시 시도해주세요.',
+              variant: 'error',
+            })
+          }
+        },
+      })
+    },
+    [deleteComment, navigate]
+  )
 
   // 무한스크롤 IntersectionObserver
   useEffect(() => {
@@ -113,6 +178,26 @@ export function CommunityCommentsPage({ postId }: Props) {
         onClose={handleToastClose}
       />
 
+      {/* 댓글 삭제 토스트 */}
+      <Toast
+        message={deleteToast.message}
+        variant={deleteToast.variant}
+        visible={deleteToast.visible}
+        onClose={() => {
+          const action = deleteToast.closeAction
+          setDeleteToast((prev) => ({ ...prev, visible: false }))
+          if (action === 'navigate-list') {
+            navigate(ROUTES.COMMUNITY.LIST, { replace: true })
+          } else if (action === 'navigate-login') {
+            navigate(ROUTES.AUTH.LOGIN, { replace: true })
+          } else if (action === 'refresh') {
+            queryClient.invalidateQueries({
+              queryKey: ['posts', postId, 'comments'],
+            })
+          }
+        }}
+      />
+
       {/* 댓글 입력창 — 로그인 사용자만 */}
       {isAuthenticated && (
         <CommentInput
@@ -147,6 +232,7 @@ export function CommunityCommentsPage({ postId }: Props) {
               key={comment.id}
               comment={comment}
               isOwn={comment.author.nickname === user?.nickname}
+              onDelete={() => handleDelete(comment.id)}
             />
           ))}
         </div>

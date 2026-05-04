@@ -45,3 +45,16 @@ export function useSubmitComment(postId: number) {
     },
   })
 }
+
+export function useDeleteComment(postId: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (commentId: number) => {
+      await api.delete(`/api/v1/posts/${postId}/comments/${commentId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', postId, 'comments'] })
+    },
+  })
+}

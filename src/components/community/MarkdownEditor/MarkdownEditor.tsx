@@ -252,7 +252,7 @@ const alignLeftCommand: ICommand = {
   icon: <AlignLeft size={14} />,
   execute: (state, api) =>
     api.replaceSelection(
-      `<div style="text-align: left">${state.selectedText}</div>`
+      `<span style="display: block; text-align: left">${state.selectedText}</span>`
     ),
 }
 
@@ -263,7 +263,7 @@ const alignCenterCommand: ICommand = {
   icon: <AlignCenter size={14} />,
   execute: (state, api) =>
     api.replaceSelection(
-      `<div style="text-align: center">${state.selectedText}</div>`
+      `<span style="display: block; text-align: center">${state.selectedText}</span>`
     ),
 }
 
@@ -274,7 +274,7 @@ const alignRightCommand: ICommand = {
   icon: <AlignRight size={14} />,
   execute: (state, api) =>
     api.replaceSelection(
-      `<div style="text-align: right">${state.selectedText}</div>`
+      `<span style="display: block; text-align: right">${state.selectedText}</span>`
     ),
 }
 
@@ -285,7 +285,7 @@ const alignJustifyCommand: ICommand = {
   icon: <AlignJustify size={14} />,
   execute: (state, api) =>
     api.replaceSelection(
-      `<div style="text-align: justify">${state.selectedText}</div>`
+      `<span style="display: block; text-align: justify">${state.selectedText}</span>`
     ),
 }
 
@@ -370,7 +370,7 @@ const lineHeightCmd: ICommand = {
           onClick={() => {
             const text = safeSelected(getState)
             textApi?.replaceSelection(
-              `<div style="line-height: ${h}">${text}</div>`
+              `<span style="display: block; line-height: ${h}">${text}</span>`
             )
             close()
           }}

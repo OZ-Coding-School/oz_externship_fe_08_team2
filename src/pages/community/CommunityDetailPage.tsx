@@ -64,7 +64,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
   const { data: post } = usePostDetail(postId)
   const { isAuthenticated, user } = useAuthStore()
 
-  const isAuthor = isAuthenticated && user?.nickname === post.author.nickname
+  const isAuthor = isAuthenticated && user?.id === post.author.id
 
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
   const [likeCount, setLikeCount] = useState(post.like_count)

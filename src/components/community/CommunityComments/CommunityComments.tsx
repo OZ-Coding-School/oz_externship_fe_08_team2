@@ -60,19 +60,30 @@ export function CommunityComments({ postId }: Props) {
   }, [navigate])
 
   const handleSubmit = useCallback(() => {
-    if (!inputValue.trim()) return
+    if (!inputValue.trim()) {
+      setSubmitErrorMessage('댓글은 1글자 이상 적어야합니다.')
+      setSubmitError(true)
+      return
+    }
     submitComment(
       { content: inputValue.trim() },
       {
         onSuccess: () => setInputValue(''),
         onError: (error) => {
-          const status = axios.isAxiosError(error)
-            ? error.response?.status
-            : null
+          if (!axios.isAxiosError(error) || !error.response) {
+            setSubmitErrorMessage('네트워크 연결을 확인해주세요.')
+            setSubmitError(true)
+            return
+          }
+          const status = error.response.status
           if (status === 401) {
             setSubmitErrorMessage('로그인이 필요합니다.')
             setSubmitError(true)
             navigate(ROUTES.AUTH.LOGIN, { replace: true })
+          } else if (status === 404) {
+            setSubmitErrorMessage('존재하지 않는 게시물입니다.')
+            setSubmitError(true)
+            navigate(ROUTES.COMMUNITY.LIST, { replace: true })
           } else {
             setSubmitErrorMessage(
               '댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.'

@@ -27,10 +27,11 @@ function renderHighlighted(text: string): ReactNode[] {
         <mark
           key={i}
           style={{
-            backgroundColor: '#DDDDDD',
+            backgroundColor: '#EDE6FF',
+            color: '#6201E0',
             fontWeight: 700,
-            borderRadius: '3px',
-            color: 'inherit',
+            borderRadius: '4px',
+            padding: '0 2px',
           }}
         >
           {part}

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/api/instance'
 import type { PostLikeResponse } from './types'
+import type { PostDetailResponse } from '../detail/types'
 
 export const useTogglePostLike = (postId: number) => {
   const queryClient = useQueryClient()
@@ -12,10 +13,18 @@ export const useTogglePostLike = (postId: number) => {
         : await api.post<PostLikeResponse>(`/api/v1/posts/${postId}/like`)
       return data
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['posts', 'detail', postId],
-      })
+    onSuccess: (data) => {
+      queryClient.setQueryData<PostDetailResponse>(
+        ['posts', 'detail', postId],
+        (prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            is_liked: data.is_liked,
+            like_count: data.like_count,
+          }
+        }
+      )
     },
   })
 }

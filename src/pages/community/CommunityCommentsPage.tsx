@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { MessageCircle } from 'lucide-react'
 import { Toast } from '@/components'
@@ -36,6 +37,7 @@ export function CommunityCommentsPage({ postId }: Props) {
     visible: boolean
     message: string
     variant: 'success' | 'error'
+    closeAction?: 'navigate-list' | 'navigate-login' | 'refresh'
   }>({ visible: false, message: '', variant: 'success' })
 
   const {
@@ -48,6 +50,7 @@ export function CommunityCommentsPage({ postId }: Props) {
     error,
   } = useCommentsInfiniteQuery(postId, Boolean(postId))
 
+  const queryClient = useQueryClient()
   const { mutate: submitComment, isPending: isSubmitting } =
     useSubmitComment(postId)
   const { mutate: deleteComment } = useDeleteComment(postId)
@@ -110,28 +113,34 @@ export function CommunityCommentsPage({ postId }: Props) {
           const status = error.response?.status
           const detail = error.response?.data?.error_detail ?? ''
           if (status === 401) {
+            // 인증 만료 → 토스트 후 로그인 이동
             setDeleteToast({
               visible: true,
               message: '로그인이 필요합니다.',
               variant: 'error',
+              closeAction: 'navigate-login',
             })
-            navigate(ROUTES.AUTH.LOGIN, { replace: true })
           } else if (status === 404 && detail.includes('게시글')) {
+            // 게시물 없음 → 토스트 후 목록 이동
             setDeleteToast({
               visible: true,
               message: '해당 게시물은 없습니다.',
               variant: 'error',
+              closeAction: 'navigate-list',
             })
           } else if (status === 404 && detail.includes('댓글')) {
+            // 댓글 없음 → 토스트 후 새로고침
             setDeleteToast({
               visible: true,
               message: '이미 삭제된 댓글입니다.',
               variant: 'error',
+              closeAction: 'refresh',
             })
           } else {
+            // 500 등 서버 오류 → 토스트만, 폼 유지
             setDeleteToast({
               visible: true,
-              message: '요청에 실패했습니다.',
+              message: '잠시 후 다시 시도해주세요.',
               variant: 'error',
             })
           }
@@ -186,12 +195,16 @@ export function CommunityCommentsPage({ postId }: Props) {
         variant={deleteToast.variant}
         visible={deleteToast.visible}
         onClose={() => {
+          const action = deleteToast.closeAction
           setDeleteToast((prev) => ({ ...prev, visible: false }))
-          if (
-            deleteToast.variant === 'error' &&
-            deleteToast.message === '해당 게시물은 없습니다.'
-          ) {
+          if (action === 'navigate-list') {
             navigate(ROUTES.COMMUNITY.LIST, { replace: true })
+          } else if (action === 'navigate-login') {
+            navigate(ROUTES.AUTH.LOGIN, { replace: true })
+          } else if (action === 'refresh') {
+            queryClient.invalidateQueries({
+              queryKey: ['posts', postId, 'comments'],
+            })
           }
         }}
       />

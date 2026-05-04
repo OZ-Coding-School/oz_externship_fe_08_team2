@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import DOMPurify from 'dompurify'
 import { Avatar } from '@/components'
+import { ConfirmModal } from '@/components/common/Modal/ConfirmModal'
 import type { Comment, TaggedUser } from '@/features/posts/comments'
 
 function formatDate(isoString: string): string {
@@ -60,6 +62,8 @@ export function CommentItem({
   onDelete,
   isDeleting = false,
 }: CommentItemProps) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
   return (
     <div className="flex gap-3 py-4">
       <Avatar
@@ -74,20 +78,31 @@ export function CommentItem({
           </span>
           <span className="text-text-muted text-xs">
             {formatDate(comment.created_at)}
-            {isOwn && (
-              <>
-                {' | '}
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={onDelete}
-                  className="transition-colors duration-150 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isDeleting ? '삭제 중...' : '삭제'}
-                </button>
-              </>
-            )}
           </span>
+          {isOwn && (
+            <>
+              <span className="text-text-muted text-xs">|</span>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setConfirmOpen(true)}
+                className="text-primary text-sm font-semibold transition-colors duration-150 hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {isDeleting ? '삭제 중...' : '삭제'}
+              </button>
+              <ConfirmModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                message="댓글을 삭제하시겠습니까?"
+                cancelLabel="취소"
+                confirmLabel="확인"
+                onConfirm={() => {
+                  setConfirmOpen(false)
+                  onDelete?.()
+                }}
+              />
+            </>
+          )}
         </div>
         <p className="text-text-body text-sm leading-relaxed break-words">
           {parseContent(comment.content, comment.tagged_users)}

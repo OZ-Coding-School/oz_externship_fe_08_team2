@@ -1,21 +1,27 @@
 import { http, HttpResponse, delay } from 'msw'
 import type { CommentsResponse } from './types'
 
-const seedComments = Array.from({ length: 25 }, (_, i) => ({
-  id: i + 1,
-  author: {
-    id: (i % 5) + 1,
-    nickname: `user${(i % 5) + 1}`,
-    profile_img_url: null,
-  },
-  tagged_users: i % 3 === 0 ? [{ id: 2, nickname: 'user2' }] : [],
-  content:
-    i % 3 === 0
-      ? `@user2 댓글 내용 ${i + 1}번째 댓글입니다.`
-      : `일반 댓글 내용 ${i + 1}번째 댓글입니다.`,
-  created_at: new Date(Date.now() - i * 60_000).toISOString(),
-  updated_at: new Date(Date.now() - i * 60_000).toISOString(),
-}))
+const seedComments = Array.from({ length: 25 }, (_, i) => {
+  // 짝수 인덱스는 테스트유저(id:99) 댓글로 시드 → 삭제 버튼 테스트용
+  const isTestUser = i % 4 === 0
+  return {
+    id: i + 1,
+    author: isTestUser
+      ? { id: 99, nickname: '테스트유저', profile_img_url: null }
+      : {
+          id: (i % 5) + 1,
+          nickname: `user${(i % 5) + 1}`,
+          profile_img_url: null,
+        },
+    tagged_users: i % 3 === 0 ? [{ id: 2, nickname: 'user2' }] : [],
+    content:
+      i % 3 === 0
+        ? `@user2 댓글 내용 ${i + 1}번째 댓글입니다.`
+        : `일반 댓글 내용 ${i + 1}번째 댓글입니다.`,
+    created_at: new Date(Date.now() - i * 60_000).toISOString(),
+    updated_at: new Date(Date.now() - i * 60_000).toISOString(),
+  }
+})
 
 // 런타임에 추가된 댓글을 누적하는 배열 (최신순: 앞에 추가)
 const mockComments = [...seedComments]

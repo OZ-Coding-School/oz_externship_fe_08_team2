@@ -53,7 +53,7 @@ export function CommentSortButton({
                   onChange(order)
                   setShowModal(false)
                 }}
-                className="flex items-center justify-center rounded-xl text-base transition-colors duration-150"
+                className="flex items-center justify-center rounded-md text-base transition-colors duration-150"
                 style={{
                   width: '118px',
                   height: '42px',

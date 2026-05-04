@@ -104,7 +104,7 @@ export function CommentItem({ comment, isOwn, onDelete }: CommentItemProps) {
             </>
           )}
         </div>
-        <p className="text-text-body text-sm leading-relaxed break-words">
+        <p className="text-text-body text-sm leading-relaxed wrap-break-word">
           {parseContent(comment.content, comment.tagged_users)}
         </p>
       </div>

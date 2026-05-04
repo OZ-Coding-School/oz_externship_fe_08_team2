@@ -147,7 +147,7 @@ export function CommunityComments({ postId }: Props) {
         },
       })
     },
-    [deleteComment, navigate]
+    [deleteComment]
   )
 
   // 무한스크롤 IntersectionObserver

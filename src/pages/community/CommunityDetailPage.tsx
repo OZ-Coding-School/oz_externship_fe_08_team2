@@ -122,7 +122,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     if (isDeletePending) return
     deletePost(postId, {
       onSuccess: () => {
-        setIsDeleteModalOpen(false) // 모달 즉시 닫기
+        setIsDeleteModalOpen(false)
         showToast('게시글이 삭제되었습니다.', 'success')
         setTimeout(() => navigate('/community'), 1500)
       },
@@ -198,11 +198,15 @@ function CommunityDetailContent({ postId }: { postId: number }) {
       {/* 게시글 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          if (!isDeletePending) setIsDeleteModalOpen(false)
+        }}
         message={`게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.`}
         confirmLabel="삭제"
         danger
+        closeOnConfirm={false}
         isConfirmDisabled={isDeletePending}
+        isCancelDisabled={isDeletePending}
         onConfirm={handleDeleteConfirm}
       />
 

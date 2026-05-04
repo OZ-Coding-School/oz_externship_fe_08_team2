@@ -100,10 +100,13 @@ export const commentsHandlers = [
     const url = new URL(request.url)
     const page = Number(url.searchParams.get('page') ?? 1)
     const pageSize = Number(url.searchParams.get('page_size') ?? 10)
-    const sort = url.searchParams.get('sort') ?? 'latest'
+    const ordering = url.searchParams.get('ordering') ?? '-created_at'
 
-    const sorted =
-      sort === 'oldest' ? [...mockComments].reverse() : mockComments
+    const sorted = [...mockComments].sort((a, b) => {
+      const diff =
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      return ordering === 'created_at' ? diff : -diff
+    })
 
     const total = sorted.length
     const start = (page - 1) * pageSize

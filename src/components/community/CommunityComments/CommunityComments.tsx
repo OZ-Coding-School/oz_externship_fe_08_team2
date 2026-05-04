@@ -45,7 +45,7 @@ export function CommunityComments({ postId }: Props) {
     isLoading,
     isError,
     error,
-  } = useCommentsInfiniteQuery(postId, Boolean(postId), sortOrder)
+  } = useCommentsInfiniteQuery(postId, sortOrder, Boolean(postId))
 
   const queryClient = useQueryClient()
   const { mutate: submitComment, isPending: isSubmitting } =

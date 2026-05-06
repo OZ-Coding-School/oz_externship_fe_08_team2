@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { categoriesHandlers } from '@/features/posts/categories'
+import { postListHandlers } from '@/features/posts/list/handler'
 import { writeHandlers } from '@/features/posts/write'
 import { postDetailHandlers } from '@/features/posts/detail'
 import { editHandlers } from '@/features/posts/edit'
@@ -8,7 +9,7 @@ import { postDeleteHandlers } from '@/features/posts/delete'
 import { commentsHandlers } from '@/features/posts/comments'
 import { userSearchHandlers } from '@/features/accounts/user-search'
 
-// categories → detail 순서: /posts/categories가 /posts/:postId보다 먼저 매칭되어야 함
+// categories → list → detail 순서: /posts/categories, /posts/가 /posts/:postId보다 먼저 매칭되어야 함
 export const handlers = [
   http.get('/api/health', () => {
     return HttpResponse.json({ status: 'ok' })
@@ -22,6 +23,7 @@ export const handlers = [
     })
   }),
   ...categoriesHandlers,
+  ...postListHandlers,
   ...writeHandlers,
   ...postDetailHandlers,
   ...editHandlers,

@@ -1,9 +1,8 @@
 /**
  * @figma 커뮤니티 - 글작성하기  https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5561&m=dev
  */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useAuthStore } from '@/stores/authStore'
 import type { AxiosError } from 'axios'
 import { ROUTES } from '@/constants/routes'
 import { useCategories } from '@/features/posts/categories'
@@ -21,18 +20,11 @@ interface ToastState {
 
 export function CommunityWritePage() {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuthStore()
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
     variant: 'success',
   })
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
 
   const {
     data: rawCategories = [],
@@ -61,8 +53,16 @@ export function CommunityWritePage() {
           error_detail?: string | Record<string, string[]>
         }>
         const detail = axiosError.response?.data?.error_detail
-        const message =
-          typeof detail === 'string' ? detail : '요청에 실패했습니다.'
+        let message = '요청에 실패했습니다.'
+        if (typeof detail === 'string') {
+          message = detail
+        } else if (detail && typeof detail === 'object') {
+          const firstValues = Object.values(detail)[0]
+          const firstMsg = Array.isArray(firstValues)
+            ? firstValues[0]
+            : undefined
+          if (firstMsg) message = firstMsg
+        }
         setToast({ visible: true, message, variant: 'error' })
       },
     })

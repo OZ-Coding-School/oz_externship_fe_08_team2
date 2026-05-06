@@ -274,7 +274,6 @@ export function CommunityListPage() {
 
       {/* 글 목록 */}
       <div className="flex min-h-96 w-full flex-col gap-10">
-      <div className="min-h-96 w-full">
         {isLoading && (
           <p className="text-text-muted py-16 text-center text-sm">
             불러오는 중...

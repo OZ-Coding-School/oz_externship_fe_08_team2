@@ -66,8 +66,6 @@ function CommunityDetailContent({ postId }: { postId: number }) {
 
   const isAuthor = isAuthenticated && user?.id === post.author.id
 
-  const [isLiked, setIsLiked] = useState(post.is_liked ?? false)
-  const [likeCount, setLikeCount] = useState(post.like_count)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [toast, setToast] = useState<{
     message: string
@@ -97,22 +95,8 @@ function CommunityDetailContent({ postId }: { postId: number }) {
     }
     if (isLikePending) return
 
-    // 낙관적 업데이트: API 응답 전 즉시 UI 반영
-    const prevLiked = isLiked
-    const prevCount = likeCount
-    setIsLiked(!isLiked)
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
-
-    toggleLike(isLiked, {
-      onSuccess: (data) => {
-        // 서버 응답으로 최종 동기화
-        setIsLiked(data.is_liked)
-        setLikeCount(data.like_count)
-      },
+    toggleLike(post.is_liked, {
       onError: () => {
-        // 실패 시 이전 상태로 롤백
-        setIsLiked(prevLiked)
-        setLikeCount(prevCount)
         showToast('좋아요 처리에 실패했습니다.', 'error')
       },
     })
@@ -159,7 +143,7 @@ function CommunityDetailContent({ postId }: { postId: number }) {
           }}
           createdAt={post.created_at}
           viewCount={post.view_count}
-          likeCount={likeCount}
+          likeCount={post.like_count}
         />
 
         {/* 수정/삭제 버튼 — 작성자 전용 */}
@@ -180,8 +164,8 @@ function CommunityDetailContent({ postId }: { postId: number }) {
 
         {/* 좋아요 */}
         <PostActions
-          likeCount={likeCount}
-          isLiked={isLiked}
+          likeCount={post.like_count}
+          isLiked={post.is_liked}
           isLoggedIn={isAuthenticated}
           isLikePending={isLikePending}
           onLike={handleLike}

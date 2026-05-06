@@ -25,19 +25,12 @@ interface ToastState {
 export function CommunityEditPage() {
   const navigate = useNavigate()
   const { postId } = useParams<{ postId: string }>()
+  const { isAuthenticated } = useAuthStore()
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
     variant: 'success',
   })
-
-  const { isAuthenticated } = useAuthStore()
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
 
   const {
     data: categories = [],
@@ -52,6 +45,12 @@ export function CommunityEditPage() {
   } = useQuery(postDetailQueryOptions(Number(postId)))
 
   const { mutate: updatePost, isPending } = useUpdatePost(postId!)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   useEffect(() => {
     if (isPostError) {

@@ -7,6 +7,7 @@ import {
   Undo2,
   Redo2,
   Underline,
+  Strikethrough,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -68,6 +69,36 @@ const PALETTE_COLORS = [
   '#c27ba0',
 ]
 
+interface EditorFullState {
+  text: string
+  selectedText: string
+  selection: { start: number; end: number }
+}
+
+// 정렬 span 제거: 이미 적용된 text-align span을 벗겨냄
+function stripAlignSpan(text: string): string {
+  return text.replace(
+    /^<span style="display: block; text-align: (?:left|center|right|justify)">([\s\S]*)<\/span>$/,
+    '$1'
+  )
+}
+
+// 줄간격 span 제거
+function stripLineHeightSpan(text: string): string {
+  return text.replace(
+    /^<span style="display: block; line-height: [\d.]+">([\s\S]*)<\/span>$/,
+    '$1'
+  )
+}
+
+// 언더라인 토글: 이미 <u>로 감싸져 있으면 제거, 아니면 추가
+function toggleUnderline(text: string): string {
+  if (/^<u>[\s\S]*<\/u>$/.test(text)) {
+    return text.replace(/^<u>([\s\S]*)<\/u>$/, '$1')
+  }
+  return `<u>${text}</u>`
+}
+
 const PILL: React.CSSProperties = {
   borderRadius: 6,
   background: '#f0f2f5',
@@ -112,8 +143,12 @@ const fontFamilyCommand: ICommand = {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             const inner = safeSelected(getState)
+            const stripped = inner.replace(
+              /^<span style="font-family: [^"]*">([\s\S]*)<\/span>$/,
+              '$1'
+            )
             textApi?.replaceSelection(
-              `<span style="font-family: ${value}">${inner}</span>`
+              `<span style="font-family: ${value}">${stripped}</span>`
             )
             close()
           }}
@@ -145,8 +180,12 @@ const fontSizeCommand: ICommand = {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             const inner = safeSelected(getState)
+            const stripped = inner.replace(
+              /^<span style="font-size: \d+px">([\s\S]*)<\/span>$/,
+              '$1'
+            )
             textApi?.replaceSelection(
-              `<span style="font-size: ${size}px">${inner}</span>`
+              `<span style="font-size: ${size}px">${stripped}</span>`
             )
             close()
           }}
@@ -165,41 +204,24 @@ const underlineCommand: ICommand = {
   buttonProps: { 'aria-label': '밑줄', title: '밑줄' },
   icon: <Underline size={14} />,
   execute: (state, api) => {
-    api.replaceSelection(`<u>${state.selectedText}</u>`)
+    api.replaceSelection(toggleUnderline(state.selectedText))
   },
 }
 
-function makeColorCommand(
-  name: string,
-  label: string,
-  icon: React.ReactElement,
-  wrap: (color: string, text: string) => string
-): ICommand {
-  return {
-    name,
-    keyCommand: 'group',
-    groupName: name,
-    buttonProps: { 'aria-label': label, title: label },
-    icon,
-    children: ({ close, getState, textApi }) => (
-      <div className="color-palette">
-        {PALETTE_COLORS.map((color) => (
-          <div
-            key={color}
-            className="color-swatch"
-            style={{ background: color }}
-            title={color}
-            onClick={() => {
-              const selected = safeSelected(getState)
-              textApi?.replaceSelection(wrap(color, selected))
-              close()
-            }}
-          />
-        ))}
-      </div>
-    ),
-    execute: () => {},
-  }
+// ~~markdown~~ 대신 <del> HTML을 사용 — markdown 취소선은 HTML 태그와 섞이면 파서가 깨짐
+const strikethroughCommand: ICommand = {
+  name: 'strikethrough',
+  keyCommand: 'strikethrough',
+  buttonProps: { 'aria-label': '취소선', title: '취소선' },
+  icon: <Strikethrough size={14} />,
+  execute: (state, api) => {
+    const sel = state.selectedText
+    if (/^<del>[\s\S]*<\/del>$/.test(sel)) {
+      api.replaceSelection(sel.replace(/^<del>([\s\S]*)<\/del>$/, '$1'))
+    } else {
+      api.replaceSelection(`<del>${sel}</del>`)
+    }
+  },
 }
 
 const BG_PALETTE_COLORS = ['#ffffff', ...PALETTE_COLORS]
@@ -266,10 +288,34 @@ const bgColorCommand: ICommand = {
             }}
             title={color}
             onClick={() => {
-              const selected = safeSelected(getState)
-              textApi?.replaceSelection(
-                `<mark style="background-color: ${color}">${selected}</mark>`
+              const state = getState?.() as false | EditorFullState | undefined
+              if (!state) {
+                close?.()
+                return
+              }
+              const { text, selectedText, selection } = state
+              const before = text.substring(0, selection.start)
+              const after = text.substring(selection.end)
+              // 선택 영역이 이미 mark 태그 안에 있는 경우: 선택을 mark 전체로 확장 후 교체
+              const beforeMark = before.match(
+                /<mark style="background-color: [^"]*">$/
               )
+              const afterMark = after.match(/^<\/mark>/)
+              if (beforeMark && afterMark) {
+                textApi?.setSelectionRange({
+                  start: selection.start - beforeMark[0].length,
+                  end: selection.end + afterMark[0].length,
+                })
+                textApi?.replaceSelection(
+                  `<mark style="background-color: ${color}">${selectedText}</mark>`
+                )
+              } else {
+                // 선택 안에 mark 태그가 포함된 경우: 모두 벗기고 새 색상 적용
+                const stripped = selectedText.replace(/<\/?mark[^>]*>/g, '')
+                textApi?.replaceSelection(
+                  `<mark style="background-color: ${color}">${stripped}</mark>`
+                )
+              }
               close()
             }}
           />
@@ -280,41 +326,101 @@ const bgColorCommand: ICommand = {
   execute: () => {},
 }
 
-const textColorCommand = makeColorCommand(
-  'text-color',
-  '글자색',
-  <span
-    style={{
-      display: 'inline-flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 2,
-      lineHeight: 1,
-    }}
-  >
-    <span style={{ fontWeight: 700, fontSize: 13 }}>A</span>
+const TEXT_COLOR_SPAN_RE = /^<span style="color: [^"]*">$/
+
+const textColorCommand: ICommand = {
+  name: 'text-color',
+  keyCommand: 'group',
+  groupName: 'text-color',
+  buttonProps: { 'aria-label': '글자색', title: '글자색' },
+  icon: (
     <span
       style={{
-        width: 14,
-        height: 3,
-        background: '#e53e3e',
-        borderRadius: 1,
-        display: 'block',
+        display: 'inline-flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+        lineHeight: 1,
       }}
-    />
-  </span>,
-  (color, text) => `<span style="color: ${color}">${text}</span>`
-)
+    >
+      <span style={{ fontWeight: 700, fontSize: 13 }}>A</span>
+      <span
+        style={{
+          width: 14,
+          height: 3,
+          background: '#e53e3e',
+          borderRadius: 1,
+          display: 'block',
+        }}
+      />
+    </span>
+  ),
+  children: ({ close, getState, textApi }) => (
+    <div className="color-palette">
+      {PALETTE_COLORS.map((color) => (
+        <div
+          key={color}
+          className="color-swatch"
+          style={{ background: color }}
+          title={color}
+          onClick={() => {
+            const state = getState?.() as false | EditorFullState | undefined
+            if (!state) {
+              close?.()
+              return
+            }
+            const { text, selectedText, selection } = state
+            const before = text.substring(0, selection.start)
+            const after = text.substring(selection.end)
+            // 선택 영역이 color span 안에 있는 경우: span 전체로 확장 후 교체
+            const beforeSpan = before.match(/<span style="color: [^"]*">$/)
+            const afterSpan = after.match(/^<\/span>/)
+            if (
+              beforeSpan &&
+              TEXT_COLOR_SPAN_RE.test(beforeSpan[0]) &&
+              afterSpan
+            ) {
+              textApi?.setSelectionRange({
+                start: selection.start - beforeSpan[0].length,
+                end: selection.end + afterSpan[0].length,
+              })
+              textApi?.replaceSelection(
+                `<span style="color: ${color}">${selectedText}</span>`
+              )
+            } else {
+              // 선택 안에 color span이 있는 경우: 모두 벗기고 새 색상 적용
+              const stripped = selectedText.replace(
+                /<span style="color: [^"]*">([\s\S]*?)<\/span>/g,
+                '$1'
+              )
+              textApi?.replaceSelection(
+                `<span style="color: ${color}">${stripped}</span>`
+              )
+            }
+            close()
+          }}
+        />
+      ))}
+    </div>
+  ),
+  execute: () => {},
+}
 
 const alignLeftCommand: ICommand = {
   name: 'align-left',
   keyCommand: 'align-left',
   buttonProps: { 'aria-label': '왼쪽 정렬', title: '왼쪽 정렬' },
   icon: <AlignLeft size={14} />,
-  execute: (state, api) =>
-    api.replaceSelection(
-      `<span style="display: block; text-align: left">${state.selectedText}</span>`
-    ),
+  execute: (state, api) => {
+    const sel = state.selectedText
+    if (/^<span style="display: block; text-align: left">/.test(sel)) {
+      api.replaceSelection(stripAlignSpan(sel))
+    } else {
+      api.replaceSelection(
+        `<span style="display: block; text-align: left">${stripAlignSpan(sel)}</span>`
+      )
+    }
+  },
 }
 
 const alignCenterCommand: ICommand = {
@@ -322,10 +428,16 @@ const alignCenterCommand: ICommand = {
   keyCommand: 'align-center',
   buttonProps: { 'aria-label': '가운데 정렬', title: '가운데 정렬' },
   icon: <AlignCenter size={14} />,
-  execute: (state, api) =>
-    api.replaceSelection(
-      `<span style="display: block; text-align: center">${state.selectedText}</span>`
-    ),
+  execute: (state, api) => {
+    const sel = state.selectedText
+    if (/^<span style="display: block; text-align: center">/.test(sel)) {
+      api.replaceSelection(stripAlignSpan(sel))
+    } else {
+      api.replaceSelection(
+        `<span style="display: block; text-align: center">${stripAlignSpan(sel)}</span>`
+      )
+    }
+  },
 }
 
 const alignRightCommand: ICommand = {
@@ -333,10 +445,16 @@ const alignRightCommand: ICommand = {
   keyCommand: 'align-right',
   buttonProps: { 'aria-label': '오른쪽 정렬', title: '오른쪽 정렬' },
   icon: <AlignRight size={14} />,
-  execute: (state, api) =>
-    api.replaceSelection(
-      `<span style="display: block; text-align: right">${state.selectedText}</span>`
-    ),
+  execute: (state, api) => {
+    const sel = state.selectedText
+    if (/^<span style="display: block; text-align: right">/.test(sel)) {
+      api.replaceSelection(stripAlignSpan(sel))
+    } else {
+      api.replaceSelection(
+        `<span style="display: block; text-align: right">${stripAlignSpan(sel)}</span>`
+      )
+    }
+  },
 }
 
 const alignJustifyCommand: ICommand = {
@@ -344,10 +462,16 @@ const alignJustifyCommand: ICommand = {
   keyCommand: 'align-justify',
   buttonProps: { 'aria-label': '양쪽 정렬', title: '양쪽 정렬' },
   icon: <AlignJustify size={14} />,
-  execute: (state, api) =>
-    api.replaceSelection(
-      `<span style="display: block; text-align: justify">${state.selectedText}</span>`
-    ),
+  execute: (state, api) => {
+    const sel = state.selectedText
+    if (/^<span style="display: block; text-align: justify">/.test(sel)) {
+      api.replaceSelection(stripAlignSpan(sel))
+    } else {
+      api.replaceSelection(
+        `<span style="display: block; text-align: justify">${stripAlignSpan(sel)}</span>`
+      )
+    }
+  },
 }
 
 const listDropdownCmd: ICommand = {
@@ -434,8 +558,9 @@ const lineHeightCmd: ICommand = {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             const text = safeSelected(getState)
+            const stripped = stripLineHeightSpan(text)
             textApi?.replaceSelection(
-              `<span style="display: block; line-height: ${h}">${text}</span>`
+              `<span style="display: block; line-height: ${h}">${stripped}</span>`
             )
             close()
           }}
@@ -490,7 +615,6 @@ const clearFormatCmd: ICommand = {
     const cleaned = state.selectedText
       .replace(/\*\*(.*?)\*\*/gs, '$1')
       .replace(/\*(.*?)\*/gs, '$1')
-      .replace(/~~(.*?)~~/gs, '$1')
       .replace(/<[^>]+>/gs, '')
     api.replaceSelection(cleaned)
   },
@@ -637,7 +761,7 @@ export function MarkdownEditor({
       mdCommands.bold,
       mdCommands.italic,
       underlineCommand,
-      mdCommands.strikethrough,
+      strikethroughCommand,
       bgColorCommand,
       textColorCommand,
       mdCommands.divider,
@@ -672,6 +796,25 @@ export function MarkdownEditor({
           preview="live"
           commands={editorCommands}
           extraCommands={editorExtraCommands}
+          textareaProps={{
+            onKeyDown: (e) => {
+              if (e.shiftKey && e.key === 'Enter') {
+                e.preventDefault()
+                const textarea = e.currentTarget
+                const start = textarea.selectionStart
+                const end = textarea.selectionEnd
+                const insert = '<br>\n'
+                const current = textarea.value
+                const next =
+                  current.substring(0, start) + insert + current.substring(end)
+                handleChange(next)
+                requestAnimationFrame(() => {
+                  textarea.selectionStart = start + insert.length
+                  textarea.selectionEnd = start + insert.length
+                })
+              }
+            },
+          }}
         />
       </div>
       {isUploading && (

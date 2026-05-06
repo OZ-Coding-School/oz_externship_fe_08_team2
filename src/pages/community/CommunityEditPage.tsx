@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { ROUTES } from '@/constants/routes'
+import { useAuthStore } from '@/stores/authStore'
 import { useCategories } from '@/features/posts/categories'
 import { postDetailQueryOptions } from '@/features/posts/detail'
 import { useUpdatePost } from '@/features/posts/edit'
@@ -24,6 +25,7 @@ interface ToastState {
 export function CommunityEditPage() {
   const navigate = useNavigate()
   const { postId } = useParams<{ postId: string }>()
+  const { isAuthenticated } = useAuthStore()
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
@@ -43,6 +45,12 @@ export function CommunityEditPage() {
   } = useQuery(postDetailQueryOptions(Number(postId)))
 
   const { mutate: updatePost, isPending } = useUpdatePost(postId!)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(ROUTES.AUTH.LOGIN || '/login', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   useEffect(() => {
     if (isPostError) {

@@ -133,3 +133,4 @@
 | `style: 커뮤니티 수정 페이지 및 관련 모듈 코드 포맷팅 정리`                 | CommunityEditPage 미사용 import/변수 제거, 후행 쉼표 정리     |
 | `fix: 마크다운 에디터 글머리/번호 목록 스타일 복원`                         | Tailwind preflight 초기화로 사라진 ul/ol list-style 재선언    |
 | `fix: 번호 목록 중첩 시 하위 단계 스타일 적용`                              | ol ol → lower-alpha, ol ol ol → lower-roman 중첩 스타일 추가  |
+| `fix: 글자색 팔레트에 흰색 추가`                                            | TEXT_PALETTE_COLORS 분리, 흰색 스와치 테두리 처리             |

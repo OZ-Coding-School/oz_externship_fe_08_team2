@@ -11,13 +11,11 @@ interface MeResponse {
 }
 
 export function useInitAuth() {
-  const { login, logout } = useAuthStore()
-
   useEffect(() => {
     api
       .get<MeResponse>('/api/v1/accounts/me/')
       .then(({ data }) => {
-        login({
+        useAuthStore.getState().login({
           id: data.id,
           nickname: data.nickname,
           email: data.email,
@@ -26,7 +24,7 @@ export function useInitAuth() {
         })
       })
       .catch(() => {
-        logout()
+        useAuthStore.getState().logout()
       })
-  }, [login, logout])
+  }, [])
 }

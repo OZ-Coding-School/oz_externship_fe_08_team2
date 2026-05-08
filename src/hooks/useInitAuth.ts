@@ -24,7 +24,7 @@ export function useInitAuth() {
         })
       })
       .catch(() => {
-        useAuthStore.getState().logout()
+        useAuthStore.getState().setInitialized()
       })
   }, [])
 }

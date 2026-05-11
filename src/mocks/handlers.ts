@@ -8,20 +8,15 @@ import { postLikeHandlers } from '@/features/posts/like'
 import { postDeleteHandlers } from '@/features/posts/delete'
 import { commentsHandlers } from '@/features/posts/comments'
 import { userSearchHandlers } from '@/features/accounts/user-search'
+import { logoutHandlers } from '@/features/accounts/logout'
+import { meHandlers } from '@/features/accounts/me'
 
 // categories → list → detail 순서: /posts/categories, /posts/가 /posts/:postId보다 먼저 매칭되어야 함
 export const handlers = [
   http.get('/api/health', () => {
     return HttpResponse.json({ status: 'ok' })
   }),
-  http.get('/api/v1/accounts/me/', () => {
-    return HttpResponse.json({
-      id: 99,
-      nickname: '테스트유저',
-      email: 'test@example.com',
-      profile_img_url: null,
-    })
-  }),
+  ...meHandlers,
   ...categoriesHandlers,
   ...postListHandlers,
   ...writeHandlers,
@@ -31,4 +26,5 @@ export const handlers = [
   ...postLikeHandlers,
   ...postDeleteHandlers,
   ...userSearchHandlers,
+  ...logoutHandlers,
 ]

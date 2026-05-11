@@ -1,4 +1,9 @@
 import { delay, http, HttpResponse } from 'msw'
+<<<<<<< HEAD
+=======
+import { apiUrl } from '@/mocks/url'
+import type { PostDeleteResponse } from './types'
+>>>>>>> 34cbdbf (fix: MSW 핸들러가 실제 API URL을 가로채지 못하는 문제 수정)
 import { postMockStore } from '../mockStore'
 import { apiUrl } from '@/mocks/url'
 import type { PostDeleteResponse } from './types'

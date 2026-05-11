@@ -1,28 +1,21 @@
 import { useEffect } from 'react'
-import axios from 'axios'
 import { RouterProvider } from '@/providers/RouterProvider'
 import { useAuthStore } from '@/stores/authStore'
+import { useCurrentUser } from '@/features/accounts/me'
 
 function AuthInitializer() {
   const login = useAuthStore((state) => state.login)
+  const { data } = useCurrentUser()
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) return
-    const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
-    axios
-      .get('/api/v1/accounts/me/', { headers })
-      .then(({ data }) => {
-        login({
-          id: data.id,
-          nickname: data.nickname,
-          email: data.email,
-          profileImage: data.profile_img_url ?? null,
-        })
-      })
-      .catch(() => {})
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (!data) return
+    login({
+      id: data.id,
+      nickname: data.nickname,
+      email: data.email,
+      profileImage: data.profile_img_url ?? null,
+    })
+  }, [data, login])
 
   return null
 }

@@ -5,17 +5,21 @@ import { useCurrentUser } from '@/features/accounts/me'
 
 function AuthInitializer() {
   const login = useAuthStore((state) => state.login)
-  const { data } = useCurrentUser()
+  const setInitialized = useAuthStore((state) => state.setInitialized)
+  const { data, isError } = useCurrentUser()
 
   useEffect(() => {
-    if (!data) return
-    login({
-      id: data.id,
-      nickname: data.nickname,
-      email: data.email,
-      profileImage: data.profile_img_url ?? null,
-    })
-  }, [data, login])
+    if (data) {
+      login({
+        id: data.id,
+        nickname: data.nickname,
+        email: data.email,
+        profileImage: data.profile_img_url ?? null,
+      })
+    } else if (isError || !localStorage.getItem('accessToken')) {
+      setInitialized()
+    }
+  }, [data, login, isError, setInitialized])
 
   return null
 }

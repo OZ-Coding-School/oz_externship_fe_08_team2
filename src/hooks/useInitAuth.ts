@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
-import { refreshAccessToken } from '@/api/interceptors'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/api/instance'
 
 interface MeResponse {
+  id: number
   nickname: string
   email: string
   profile_img_url?: string | null
@@ -11,13 +11,12 @@ interface MeResponse {
 }
 
 export function useInitAuth() {
-  const { login, logout } = useAuthStore()
-
   useEffect(() => {
-    refreshAccessToken()
-      .then(async () => {
-        const { data } = await api.get<MeResponse>('/api/v1/accounts/me')
-        login({
+    api
+      .get<MeResponse>('/api/v1/accounts/me')
+      .then(({ data }) => {
+        useAuthStore.getState().login({
+          id: data.id,
           nickname: data.nickname,
           email: data.email,
           profileImage: data.profile_img_url,
@@ -25,7 +24,7 @@ export function useInitAuth() {
         })
       })
       .catch(() => {
-        logout()
+        useAuthStore.getState().setInitialized()
       })
-  }, [login, logout])
+  }, [])
 }

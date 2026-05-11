@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl'
 
 export interface AvatarProps {
@@ -31,6 +33,8 @@ export function Avatar({
   className = '',
 }: AvatarProps) {
   const letters = deriveInitials(alt, initials)
+  const [imgError, setImgError] = useState(false)
+  const showImage = src && !imgError
 
   return (
     <span
@@ -39,18 +43,19 @@ export function Avatar({
       className={[
         'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold select-none',
         sizeClasses[size],
-        !src ? 'bg-primary-100 text-primary-700' : '',
+        !showImage ? 'bg-primary-100 text-primary-700' : '',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      {src ? (
+      {showImage ? (
         <img
           src={src}
           alt=""
           aria-hidden="true"
           className="h-full w-full object-cover"
+          onError={() => setImgError(true)}
         />
       ) : (
         <span aria-hidden="true">{letters}</span>

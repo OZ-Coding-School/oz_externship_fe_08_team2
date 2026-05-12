@@ -25,10 +25,10 @@ export const ROUTES = {
   },
 
   QNA: {
-    LIST: `${MY_SITE}/qna`,
-    WRITE: `${MY_SITE}/qna/write`,
-    DETAIL: `${MY_SITE}/qna`,
-    EDIT: `${MY_SITE}/qna`,
+    LIST: 'https://qna.ozcodingschool.site',
+    WRITE: 'https://qna.ozcodingschool.site/write',
+    DETAIL: 'https://qna.ozcodingschool.site',
+    EDIT: 'https://qna.ozcodingschool.site',
   },
 
   COMMUNITY: {

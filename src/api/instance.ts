@@ -20,6 +20,6 @@ export const baseApi = axios.create({
   withCredentials: true,
 })
 
-setupInterceptors(api, baseApi)
+setupInterceptors(api)
 
 export default api

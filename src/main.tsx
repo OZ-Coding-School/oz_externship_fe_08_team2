@@ -30,4 +30,5 @@ function renderApp() {
 //     console.error('MSW 초기화 실패:', error)
 //     renderApp()
 //   })
+
 renderApp()

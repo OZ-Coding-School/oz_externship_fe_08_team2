@@ -28,7 +28,7 @@ export function usePresignedUrl() {
   return useMutation({
     mutationFn: async (body: PresignedUrlRequest) => {
       const { data } = await api.post<PresignedUrlResponse>(
-        '/api/v1/posts/presigned-url',
+        '/api/v1/posts/presigned-url/',
         body
       )
       return data

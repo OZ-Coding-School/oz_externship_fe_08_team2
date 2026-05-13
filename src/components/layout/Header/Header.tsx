@@ -49,7 +49,7 @@ export function Header({
                 커뮤니티
               </button>
               <a
-                href={isAuthenticated ? ROUTES.QNA.LIST : ROUTES.AUTH.LOGIN}
+                href={ROUTES.QNA.LIST}
                 className="hover:text-primary px-2.5 py-2.5 text-lg tracking-tight text-gray-900 transition-colors duration-150"
               >
                 질의응답
@@ -84,7 +84,9 @@ export function Header({
                 nickname={user?.nickname ?? ''}
                 email={user?.email ?? ''}
                 enrollHref={ROUTES.SIGNUP.SELECT}
-                mypageHref={ROUTES.MYPAGE.HOME}
+                mypageHref={
+                  isAuthenticated ? ROUTES.MYPAGE.HOME : ROUTES.AUTH.LOGIN
+                }
                 onLogout={() => {
                   requestLogout(undefined, {
                     onSettled: () => {

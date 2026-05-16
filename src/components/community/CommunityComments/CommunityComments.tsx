@@ -27,7 +27,6 @@ export function CommunityComments({ postId }: Props) {
   const isInitialized = useAuthStore((state) => state.isInitialized)
   const user = useAuthStore((state) => state.user)
   const loadMoreRef = useRef<HTMLDivElement>(null)
-  const isAtBottomRef = useRef(false)
   const [inputValue, setInputValue] = useState('')
   const [submitError, setSubmitError] = useState(false)
   const [submitErrorMessage, setSubmitErrorMessage] = useState('')
@@ -152,7 +151,8 @@ export function CommunityComments({ postId }: Props) {
     [deleteComment]
   )
 
-  // 무한스크롤: sentinel 가시성 추적 (첫 관찰은 항상 스킵 — 페이지 로드·복귀 시 즉시 발동 방지)
+  // 무한스크롤: sentinel이 viewport에 들어올 때 다음 페이지 요청
+  // 첫 관찰(isFirstFire)은 스킵 — 페이지 로드/복귀 시 즉시 발동 방지
   useEffect(() => {
     const el = loadMoreRef.current
     if (!el) return
@@ -160,7 +160,6 @@ export function CommunityComments({ postId }: Props) {
     let isFirstFire = true
     const observer = new IntersectionObserver(
       (entries) => {
-        isAtBottomRef.current = entries[0].isIntersecting
         if (isFirstFire) {
           isFirstFire = false
           return
@@ -175,13 +174,6 @@ export function CommunityComments({ postId }: Props) {
     observer.observe(el)
     return () => observer.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
-
-  // 페이지 fetch 완료 후 sentinel이 여전히 보이면 다음 페이지 요청 (연속 스크롤)
-  useEffect(() => {
-    if (!isFetchingNextPage && isAtBottomRef.current && hasNextPage) {
-      fetchNextPage()
-    }
-  }, [isFetchingNextPage, hasNextPage, fetchNextPage])
 
   const allComments = (data?.pages.flatMap((page) => page.results) ?? []).sort(
     (a, b) => {

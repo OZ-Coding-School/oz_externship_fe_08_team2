@@ -151,6 +151,27 @@ export function CommunityComments({ postId }: Props) {
     [deleteComment]
   )
 
+  // 최소 1초 로딩 표시 — 초기 로딩
+  const [showInitialLoader, setShowInitialLoader] = useState(true)
+  useEffect(() => {
+    if (!isLoading) {
+      const timer = setTimeout(() => setShowInitialLoader(false), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
+
+  // 최소 1초 로딩 표시 — 무한스크롤 로딩
+  const [showScrollLoader, setShowScrollLoader] = useState(false)
+  useEffect(() => {
+    if (isFetchingNextPage) {
+      const timer = setTimeout(() => setShowScrollLoader(true), 0)
+      return () => clearTimeout(timer)
+    } else {
+      const timer = setTimeout(() => setShowScrollLoader(false), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [isFetchingNextPage])
+
   // 스크롤 여부 추적 — 한 번이라도 스크롤해야 무한스크롤 허용 (자동 발동 방지)
   const hasScrolledRef = useRef(false)
   useEffect(() => {
@@ -193,7 +214,7 @@ export function CommunityComments({ postId }: Props) {
   )
   const totalCount = data?.pages[0]?.count ?? 0
 
-  if (isLoading) {
+  if (isLoading || showInitialLoader) {
     return (
       <section className="mt-8">
         <CommentLoadingDots />
@@ -273,7 +294,7 @@ export function CommunityComments({ postId }: Props) {
 
       {/* 무한스크롤 감지 영역 + 로딩 표시 */}
       <div ref={loadMoreRef} className="py-2">
-        {isFetchingNextPage && <CommentLoadingDots />}
+        {showScrollLoader && <CommentLoadingDots />}
       </div>
     </section>
   )

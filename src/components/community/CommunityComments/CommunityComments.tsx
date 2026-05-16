@@ -156,13 +156,24 @@ export function CommunityComments({ postId }: Props) {
     const el = loadMoreRef.current
     if (!el) return
 
+    let isInitial = true
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (!entries[0].isIntersecting) {
+          isInitial = false
+          return
+        }
+        // 첫 관찰(페이지 로드 직후)은 사용자가 실제로 스크롤한 경우에만 허용
+        if (isInitial && window.scrollY === 0) {
+          isInitial = false
+          return
+        }
+        isInitial = false
+        if (hasNextPage && !isFetchingNextPage) {
           fetchNextPage()
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.1 }
     )
 
     observer.observe(el)

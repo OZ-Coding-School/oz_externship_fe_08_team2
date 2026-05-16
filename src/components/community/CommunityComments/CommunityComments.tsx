@@ -151,20 +151,29 @@ export function CommunityComments({ postId }: Props) {
     [deleteComment]
   )
 
+  // 스크롤 여부 추적 — 한 번이라도 스크롤해야 무한스크롤 허용 (자동 발동 방지)
+  const hasScrolledRef = useRef(false)
+  useEffect(() => {
+    const onScroll = () => {
+      hasScrolledRef.current = true
+    }
+    window.addEventListener('scroll', onScroll, { passive: true, once: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   // 무한스크롤: sentinel이 viewport에 들어올 때 다음 페이지 요청
-  // 첫 관찰(isFirstFire)은 스킵 — 페이지 로드/복귀 시 즉시 발동 방지
   useEffect(() => {
     const el = loadMoreRef.current
     if (!el) return
 
-    let isFirstFire = true
     const observer = new IntersectionObserver(
       (entries) => {
-        if (isFirstFire) {
-          isFirstFire = false
-          return
-        }
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          hasScrolledRef.current
+        ) {
           fetchNextPage()
         }
       },
